@@ -1,0 +1,106 @@
+# Armin Lišić — Black & White Web Portfolio
+Live Version: (add your deployed link here)
+Author: https://github.com/Armin-000
+
+A clean, minimalistic, black & white portfolio built with modern UI patterns, floating animations, smooth scroll interactions, and elegant section structure.  
+It presents my work, projects, tech stack, and a featured case study: Cochlear Nucleus.
+
+---
+
+## Why Black & White?
+
+No distraction.  
+No noise.  
+Just clean structure + controlled animations + perfect clarity.
+
+The entire portfolio is focused on:
+- smooth micro-interactions  
+- premium typography  
+- floating arrow animations  
+- moving background lines  
+- elegant section flow  
+- strong UX hierarchy  
+
+Everything is designed to feel calm, sharp, and professional.
+
+---
+
+## Structure of the Portfolio
+
+### Home (Hero)
+- Intro text  
+- Orbit animation with cards  
+- Smooth reveal  
+- Scroll indicator  
+
+### About Me
+- Profile and philosophy  
+- Workflow principles  
+- Tag list  
+- Professional timeline  
+
+### Featured Project — Cochlear Nucleus
+A case-study style section:
+- project purpose  
+- UX structure  
+- UI decisions  
+- technical stack  
+- metrics and layout  
+
+### Projects
+Showcase of selected projects:
+- Cochlear Nucleus  
+- Car Dealership Platform  
+- Future project slot  
+- Each with GitHub links  
+
+### Tech Stack
+Organized into:
+- Frontend  
+- Backend & databases  
+- Tools & mindset  
+
+### Contact
+Includes:
+- Email  
+- GitHub  
+- Location  
+- Demo contact form  
+
+---
+
+## Technologies
+
+### Frontend
+- HTML5  
+- CSS3 (grid, flex, animations)  
+- JavaScript (ES6+)  
+- Reveal animations  
+- Custom parallax effects  
+
+### Tools
+- Google Fonts (Inter, Playfair Display)  
+- Font Awesome Icons  
+- GitHub Pages (optional hosting)  
+
+---
+
+## Folder Structure
+
+/
+│── index.html  
+│── style.css  
+│── script.js  
+│── LICENSE  
+└── README.md  
+
+Everything is standalone with no dependencies.
+
+---
+
+## Run Locally
+
+```bash
+git clone https://github.com/Armin-000/your-portfolio-repo
+cd your-portfolio-repo
+open index.html
