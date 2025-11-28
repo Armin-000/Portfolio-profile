@@ -1,43 +1,86 @@
 <!DOCTYPE html>
-<html lang="en">
-<head>
-    <!-- Basic meta -->
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <html lang="en">
+        <head>
+            <!-- Basic meta -->
+            <meta charset="UTF-8" />
+            <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-    <title>Armin – Portfolio</title>
+            <!-- SEO -->
+            <title>Armin – Portfolio</title>
+            <meta name="description"
+                content="Armin – full-stack web developer focused on clean UX, local AI (Ollama / Nexora), 3D Cochlear models and structured applications.">
 
-    <!-- Favicon -->
-    <link rel="icon" type="image/png" sizes="32x32" href="img/favicon.ico" />
+            <!-- Open Graph -->
+            <meta property="og:title" content="Armin – Web Developer">
+            <meta property="og:description"
+                content="Black & white portfolio with Nexora, local AI experiments, 3D Cochlear and full-stack projects.">
+            <meta property="og:type" content="website">
+            <meta property="og:image" content="https://armin-lisic-portfolio.netlify.app/img/Portfolio.webp">
+            <meta property="og:url" content="https://armin-lisic-portfolio.netlify.app/">
 
-    <!-- Meta description / Open Graph -->
-    <meta name="description"
-          content="Armin – full-stack web developer focused on clean UX, local AI (Ollama / Nexora), 3D Cochlear models and structured applications.">
-    <meta property="og:title" content="Armin – Web Developer">
-    <meta property="og:description"
-          content="Black & white portfolio with Nexora, local AI experiments, 3D Cochlear and full-stack projects.">
-    <meta property="og:type" content="website">
-    <meta property="og:image" content="https://armin-lisic-portfolio.netlify.app/img/Portfolio.jpg">
-    <meta property="og:url" content="https://armin-lisic-portfolio.netlify.app/">
+            <!-- Favicon -->
+            <link rel="icon" type="image/png" sizes="32x32" href="img/favicon.ico" />
 
-    <!-- Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link
-        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@500;600&display=swap"
-        rel="stylesheet">
+            <!-- ========================================================= -->
+            <!-- GOOGLE FONTS (preconnect + preload + lazy load) -->
+            <!-- ========================================================= -->
+            <link rel="preconnect" href="https://fonts.googleapis.com">
+            <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 
-    <!-- Icons -->
-    <link rel="stylesheet"
-          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
-          crossorigin="anonymous"
-          referrerpolicy="no-referrer" />
+            <link
+                rel="preload"
+                as="style"
+                href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@500;600&display=swap"
+            />
 
-    <!-- Styles -->
-    <link rel="stylesheet" href="style.css" />
-</head>
+            <link
+                rel="stylesheet"
+                href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@500;600&display=swap"
+                media="print"
+                onload="this.media='all'"
+            />
 
-<body>
+            <noscript>
+                <link
+                    rel="stylesheet"
+                    href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@500;600&display=swap"
+                />
+            </noscript>
+
+            <!-- ========================================================= -->
+            <!-- FONT AWESOME (preload + lazy load) -->
+            <!-- ========================================================= -->
+            <link
+                rel="preload"
+                as="style"
+                href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
+                crossorigin="anonymous"
+            />
+
+            <link
+                rel="stylesheet"
+                href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
+                crossorigin="anonymous"
+                referrerpolicy="no-referrer"
+                media="print"
+                onload="this.media='all'"
+            />
+
+            <noscript>
+                <link
+                    rel="stylesheet"
+                    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
+                    crossorigin="anonymous"
+                    referrerpolicy="no-referrer"
+                />
+            </noscript>
+
+            <!-- ========================================================= -->
+            <!-- MAIN CSS (minified) -->
+            <!-- ========================================================= -->
+            <link rel="preload" href="style.min.css" as="style" />
+            <link rel="stylesheet" href="style.min.css" />
+        </head>
     <body>
 
     <!-- PRELOADER OVERLAY -->
@@ -222,7 +265,7 @@
 
                             <h1 class="hero__title" id="home-title">
                                 <span class="sr-only">Armin – Web Developer</span>
-                                <img src="img/Portfolio.jpg"
+                                <img src="img/Portfolio.webp"
                                      alt="Portrait of Armin – web developer"
                                      class="hero__profile-image">
                             </h1>
@@ -757,7 +800,7 @@
                     <div class="contact-center reveal" data-delay="0.1s">
                         <!-- Avatar -->
                         <div class="contact-avatar">
-                            <img src="img/Portfolio.jpg"
+                            <img src="img/Portfolio.webp"
                                  alt="Armin – web developer"
                                  class="contact-profile-image">
                         </div>
@@ -820,6 +863,6 @@
     </div>
 
     <!-- Scripts -->
-    <script src="script.js"></script>
+    <script src="script.js" defer></script>
 </body>
 </html>
