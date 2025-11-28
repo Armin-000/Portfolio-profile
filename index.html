@@ -3,7 +3,10 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Armin – Web Developer</title>
+    <title>Armin – Portfolio</title>
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" sizes="32x32" href="img/favicon.ico">
 
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -12,6 +15,14 @@
         href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@500;600&display=swap"
         rel="stylesheet">
 
+    <!-- Meta -->
+    <meta name="description" content="Armin – full-stack web developer focused on clean UX, local AI (Ollama / Nexora), 3D Cochlear models and structured applications.">
+    <meta property="og:title" content="Armin – Web Developer">
+    <meta property="og:description" content="Black & white portfolio with Nexora, local AI experiments, 3D Cochlear and full-stack projects.">
+    <meta property="og:type" content="website">
+    <meta property="og:image" content="https://armin-lisic-portfolio.netlify.app/img/Portfolio.jpg">
+    <meta property="og:url" content="https://armin-lisic-portfolio.netlify.app/">
+
     <!-- Icons -->
     <link rel="stylesheet"
           href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
@@ -19,6 +30,7 @@
 
     <link rel="stylesheet" href="style.css" />
 </head>
+
 <body>
 
 <!-- BACKGROUND DECORATIONS: LINES + FLOATING ARROWS -->
@@ -55,7 +67,6 @@
                 <ul class="nav__list">
                     <li><a href="#home" class="nav__link js-scroll-link nav__link--active">Home</a></li>
                     <li><a href="#about" class="nav__link js-scroll-link">About</a></li>
-                    <!-- NEW: Featured nav item -->
                     <li><a href="#featured" class="nav__link js-scroll-link">Featured</a></li>
                     <li><a href="#projects" class="nav__link js-scroll-link">Projects</a></li>
                     <li><a href="#stack" class="nav__link js-scroll-link">Stack</a></li>
@@ -63,7 +74,7 @@
                 </ul>
             </nav>
 
-            <a href="https://github.com/your-github-username" target="_blank" class="topbar__github">
+            <a href="https://github.com/Armin-000" target="_blank" class="topbar__github">
                 <i class="fa-brands fa-github"></i>
                 <span>GitHub</span>
             </a>
@@ -84,7 +95,6 @@
     <aside class="dot-nav">
         <button class="dot-nav__item dot-nav__item--active" data-target="#home" aria-label="Home"></button>
         <button class="dot-nav__item" data-target="#about" aria-label="About"></button>
-        <!-- NEW: Featured dot -->
         <button class="dot-nav__item" data-target="#featured" aria-label="Featured"></button>
         <button class="dot-nav__item" data-target="#projects" aria-label="Projects"></button>
         <button class="dot-nav__item" data-target="#stack" aria-label="Stack"></button>
@@ -94,92 +104,103 @@
     <!-- MAIN CONTENT -->
     <main class="main">
 
-        <!-- HERO / HOME -->
-        <section id="home" class="section section--hero js-section" data-section="0">
-            <div class="section__inner">
-                <div class="hero">
+    <!-- HERO / HOME -->
+    <section id="home" class="section section--hero js-section" data-section="0">
+        <div class="section__inner">
+            <div class="hero">
 
-                    <div class="hero__left reveal" data-delay="0.05s">
-                        <p class="eyebrow">PORTFOLIO</p>
-                        <h1 class="hero__title">
-                            Black & white<br>
-                            <span class="hero__title--highlight">web experiences with control</span>
-                        </h1>
-                        <p class="hero__subtitle">
-                            I’m <strong>Armin</strong>, a web developer who cares about clean structure,
-                            readable code and smooth micro-interactions that make everything feel calm and solid.
-                        </p>
+                <div class="hero__left reveal" data-delay="0.05s">
+                    <p class="eyebrow">PORTFOLIO</p>
 
-                        <div class="hero__actions">
-                            <a href="#projects" class="btn btn--primary js-scroll-link">
-                                <span>View projects</span>
-                                <i class="fa-solid fa-arrow-right"></i>
-                            </a>
-                            <a href="https://github.com/your-github-username" target="_blank" class="btn btn--ghost">
-                                <i class="fa-brands fa-github"></i>
-                                <span>GitHub profile</span>
-                            </a>
-                        </div>
+                    <h1 class="hero__title">
+                        <span class="sr-only">Armin – Web Developer</span>
+                        <img src="img/Portfolio.jpg" alt="Armin – web developer" class="hero__profile-image">
+                    </h1>
 
-                        <div class="hero__meta">
-                            <div class="hero__meta-item">
-                                <span class="label">Focus</span>
-                                <span class="value">Web apps, UI/UX, databases</span>
-                            </div>
-                            <div class="hero__meta-item">
-                                <span class="label">Stack</span>
-                                <span class="value">HTML · CSS · JS · Vue · PHP · MySQL</span>
-                            </div>
-                        </div>
+                    <p class="hero__subtitle">
+                        I’m <strong>Armin</strong>, a full-stack developer focused on clean UX, 
+                        balanced structure and modern workflows powered by 
+                        <strong>local AI tools like Ollama</strong> and my own assistant <strong>Nexora</strong>.
+                        I enjoy combining frontend, backend and data models into calm, functional applications.
+                    </p>
+
+                    <div class="hero__actions">
+                        <a href="#projects" class="btn btn--primary js-scroll-link">
+                            <span>View projects</span>
+                            <i class="fa-solid fa-arrow-right"></i>
+                        </a>
+                        <a href="https://github.com/Armin-000" target="_blank" class="btn btn--ghost">
+                            <i class="fa-brands fa-github"></i>
+                            <span>GitHub profile</span>
+                        </a>
                     </div>
 
-                    <div class="hero__right">
-                        <div class="hero-orbit" id="heroOrbit">
-                            <div class="hero-orbit__ring hero-orbit__ring--outer"></div>
-                            <div class="hero-orbit__ring hero-orbit__ring--inner"></div>
-
-                            <div class="hero-orbit__card hero-orbit__card--main reveal" data-delay="0.1s">
-                                <div class="hero-card-mini">
-                                    <div class="hero-card-mini__top">
-                                        <span class="pill pill--live">Active project</span>
-                                        <span class="hero-card-mini__year">2025</span>
-                                    </div>
-                                    <h2>Cochlear Nucleus</h2>
-                                    <p>
-                                        A platform that explains Cochlear hearing devices (Nucleus 6, 7, 8…)
-                                        with clean sections, animations and a backing database.
-                                    </p>
-                                    <ul class="hero-card-mini__tags">
-                                        <li>Vue</li>
-                                        <li>Node</li>
-                                        <li>MySQL</li>
-                                    </ul>
-                                </div>
-                            </div>
-
-                            <div class="hero-orbit__card hero-orbit__card--small hero-orbit__card--top reveal" data-delay="0.18s">
-                                <div class="stat-card">
-                                    <span class="stat-card__label">Projects</span>
-                                    <span class="stat-card__value">10+</span>
-                                </div>
-                            </div>
-
-                            <div class="hero-orbit__card hero-orbit__card--small hero-orbit__card--bottom reveal" data-delay="0.26s">
-                                <div class="stat-card">
-                                    <span class="stat-card__label">Core</span>
-                                    <span class="stat-card__value">Frontend &<br>logic</span>
-                                </div>
-                            </div>
+                    <div class="hero__meta">
+                        <div class="hero__meta-item">
+                            <span class="label">Focus</span>
+                            <span class="value">
+                                Web apps · Local AI · UI/UX · Full-stack flow
+                            </span>
+                        </div>
+                        <div class="hero__meta-item">
+                            <span class="label">Stack</span>
+                            <span class="value">
+                                HTML · SCSS · JS · TS · TSX · React · Vue · PHP · Node · MySQL · Ollama
+                            </span>
                         </div>
                     </div>
                 </div>
 
-                <div class="scroll-hint">
-                    <span>Scroll</span>
-                    <div class="scroll-hint__line"><span></span></div>
+                <!-- RIGHT SIDE – FEATURED PROJECT -->
+                <div class="hero__right">
+                    <div class="hero-orbit" id="heroOrbit">
+                        <div class="hero-orbit__ring hero-orbit__ring--outer"></div>
+                        <div class="hero-orbit__ring hero-orbit__ring--inner"></div>
+
+                        <div class="hero-orbit__card hero-orbit__card--main reveal" data-delay="0.1s">
+                            <div class="hero-card-mini">
+                                <div class="hero-card-mini__top">
+                                    <span class="pill pill--live">Active project</span>
+                                    <span class="hero-card-mini__year">2025</span>
+                                </div>
+                                <h2>Nexora – Local AI Assistant</h2>
+                                <p>
+                                    A personal AI coding assistant running on Ollama. 
+                                    Built for structure, code analysis, workflow speed 
+                                    and full local control without cloud dependence.
+                                </p>
+                                <ul class="hero-card-mini__tags">
+                                    <li>TypeScript</li>
+                                    <li>Node</li>
+                                    <li>Local AI</li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <div class="hero-orbit__card hero-orbit__card--small hero-orbit__card--top reveal" data-delay="0.18s">
+                            <div class="stat-card">
+                                <span class="stat-card__label">Projects</span>
+                                <span class="stat-card__value">15+</span>
+                            </div>
+                        </div>
+
+                        <div class="hero-orbit__card hero-orbit__card--small hero-orbit__card--bottom reveal" data-delay="0.26s">
+                            <div class="stat-card">
+                                <span class="stat-card__label">Core</span>
+                                <span class="stat-card__value">Frontend &amp;<br>Logic</span>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
-        </section>
+
+            <div class="scroll-hint">
+                <span>Scroll</span>
+                <div class="scroll-hint__line"><span></span></div>
+            </div>
+        </div>
+    </section>
+
 
         <!-- ABOUT + TIMELINE -->
         <section id="about" class="section js-section" data-section="1">
@@ -188,26 +209,29 @@
                     <p class="eyebrow">ABOUT</p>
                     <h2>Who I am & how I think</h2>
                     <p class="section__intro">
-                        I don’t build “just another page”. Every project has a structure, a reason
-                        and a clear codebase behind it. The black & white aesthetic helps keep
-                        everything calm and focused.
+                        I focus on clear structure, functional design and a calm black & white visual language.
+                        My projects combine frontend, backend, databases and, lately, local AI tools that improve
+                        how I understand and build applications.
                     </p>
                 </header>
 
                 <div class="about-grid">
+
+                    <!-- PROFILE -->
                     <div class="about-grid__col reveal" data-delay="0.1s">
                         <h3>Profile</h3>
                         <p>
-                            I combine <strong>frontend</strong> (HTML, CSS, JavaScript, animations) and
-                            <strong>backend</strong> (PHP / Node, MySQL) so you can go from an idea
-                            to a real web application that actually works.
+                            I work across the full stack — from <strong>frontend</strong> (HTML, CSS, JS, UI/UX)
+                            to <strong>backend</strong> (PHP, Node.js) and <strong>database design</strong> 
+                            using MySQL and structured data models.
                         </p>
                         <p>
-                            My structure is clear, sections are well defined and the design stays minimal.
-                            I don’t like random elements or effects that don’t support the idea.
+                            My aim is always the same: make the project clean, organized and scalable.
+                            No noise, no random elements — everything has a purpose.
                         </p>
                     </div>
 
+                    <!-- HOW I WORK -->
                     <div class="about-grid__col reveal" data-delay="0.18s">
                         <h3>How I work</h3>
                         <ul class="bullet-list">
@@ -215,104 +239,132 @@
                                 <span class="bullet"></span>
                                 <div>
                                     <strong>Structure first</strong>
-                                    <p>Clean layout, separated logic and components that make sense.</p>
+                                    <p>Sections, logic and components are planned before design begins.</p>
                                 </div>
                             </li>
                             <li>
                                 <span class="bullet"></span>
                                 <div>
-                                    <strong>Responsive by default</strong>
-                                    <p>The page must behave seriously both on mobile and desktop.</p>
+                                    <strong>Frontend ↔ Backend flow</strong>
+                                    <p>
+                                        I always think in terms of complete flow: UI → logic → database → response.
+                                    </p>
+                                </div>
+                            </li>
+                            <li>
+                                <span class="bullet"></span>
+                                <div>
+                                    <strong>Local AI tools</strong>
+                                    <p>
+                                        I use <strong>Ollama</strong> and my own AI assistant <strong>Nexora</strong>
+                                        to analyse code, structure ideas and speed up development safely and offline.
+                                    </p>
                                 </div>
                             </li>
                             <li>
                                 <span class="bullet"></span>
                                 <div>
                                     <strong>Subtle animations</strong>
-                                    <p>
-                                        Effects that you feel more than you see – everything stays smooth,
-                                        not distracting.
-                                    </p>
+                                    <p>Clean micro-interactions that support the design instead of distracting from it.</p>
                                 </div>
                             </li>
                         </ul>
                     </div>
 
+                    <!-- FOCUSED ON -->
                     <div class="about-grid__col reveal" data-delay="0.26s">
                         <h3>Currently focused on</h3>
                         <ul class="tag-row">
-                            <li>Cochlear platform</li>
-                            <li>Car dealership system</li>
-                            <li>SPA applications</li>
-                            <li>Admin dashboards</li>
-                            <li>UX details</li>
+                            <li>Local AI (Ollama / Nexora)</li>
+                            <li>3D Cochlear models</li>
+                            <li>Full-stack apps</li>
+                            <li>Databases & API design</li>
+                            <li>Clean UX flow</li>
                         </ul>
                     </div>
+
                 </div>
 
-                <!-- Timeline -->
+                <!-- TIMELINE -->
                 <div class="timeline reveal" data-delay="0.32s">
                     <h3 class="timeline__title">Small timeline</h3>
+
                     <div class="timeline__list">
+
                         <div class="timeline__item">
                             <div class="timeline__dot"></div>
                             <div class="timeline__content">
                                 <span class="timeline__year">2023 → 2024</span>
-                                <p>Projects with databases (MySQL, PHP) and data administration.</p>
+                                <p>First full-stack projects: PHP + MySQL, admin dashboards and real CRUD logic.</p>
                             </div>
                         </div>
+
                         <div class="timeline__item">
                             <div class="timeline__dot"></div>
                             <div class="timeline__content">
                                 <span class="timeline__year">2024</span>
-                                <p>Car dealership web platform – selling, buying, valuation, admin panel.</p>
+                                <p>
+                                    Car dealership platform (GarageX): selling, buying, valuation, admin panel, 
+                                    database structure and responsive interface.
+                                </p>
                             </div>
                         </div>
+
                         <div class="timeline__item">
                             <div class="timeline__dot"></div>
                             <div class="timeline__content">
                                 <span class="timeline__year">2025</span>
-                                <p>Cochlear Nucleus app – UX, animations and 3D-focused frontend work.</p>
+                                <p>
+                                    Local AI tools (Nexora + Ollama), 3D Cochlear Nucleus interface, 
+                                    and stronger focus on frontend architecture & UX.
+                                </p>
                             </div>
                         </div>
+
                     </div>
                 </div>
 
             </div>
         </section>
 
-        <!-- ⭐ NEW FEATURED SECTION -->
+
+        <!-- FEATURED SECTION -->
         <section id="featured" class="section section--featured js-section" data-section="2">
             <div class="section__inner section__inner--featured">
                 <div class="featured">
+
+                    <!-- LEFT SIDE -->
                     <div class="featured__left reveal" data-delay="0.05s">
                         <p class="eyebrow">FEATURED</p>
+
                         <h2 class="featured__title">
-                            Cochlear Nucleus<br>
-                            <span class="featured__subtitle">A focused experience for complex medical tech</span>
+                            Nexora<br>
+                            <span class="featured__subtitle">Local AI assistant for smarter coding</span>
                         </h2>
+
                         <p class="featured__text">
-                            This project is not just a “nice UI”. It takes something complex – modern hearing devices –
-                            and explains it with calm sections, structured content and interactive elements.
+                            Nexora is a lightweight local AI code assistant designed to help you think, 
+                            refactor and structure your work — without relying on cloud APIs.
                         </p>
                         <p class="featured__text">
-                            The goal is to let users understand Nucleus 6, 7, 8 and newer generations without noise,
-                            in a layout that feels like a quiet, precise instrument.
+                            It allows fast iteration, deep explanation of files and logic, and lets you 
+                            work with codebases in a clean, tool-driven developer workflow.
                         </p>
 
                         <div class="featured__meta">
                             <div class="featured-pill">
                                 <span class="featured-pill__label">Role</span>
-                                <span class="featured-pill__value">Design · Frontend · Data structure</span>
+                                <span class="featured-pill__value">Architecture · TypeScript · Node.js</span>
                             </div>
                             <div class="featured-pill">
                                 <span class="featured-pill__label">Type</span>
-                                <span class="featured-pill__value">Single-page web application</span>
+                                <span class="featured-pill__value">Developer tool / AI assistant</span>
                             </div>
                         </div>
 
                         <div class="featured__links">
-                            <a href="https://github.com/your-github-username/cochlear-project" target="_blank" class="btn btn--primary">
+                            <a href="https://github.com/Armin-000/Nexora" 
+                               target="_blank" class="btn btn--primary">
                                 <span>View GitHub repo</span>
                                 <i class="fa-brands fa-github"></i>
                             </a>
@@ -323,8 +375,10 @@
                         </div>
                     </div>
 
+                    <!-- RIGHT SIDE -->
                     <div class="featured__right reveal" data-delay="0.14s">
                         <div class="featured-card">
+
                             <div class="featured-card__header">
                                 <span class="badge-featured">
                                     <i class="fa-solid fa-wave-square"></i>
@@ -334,29 +388,32 @@
                             </div>
 
                             <div class="featured-card__body">
+
                                 <div class="featured-metric">
-                                    <span class="featured-metric__label">Devices covered</span>
-                                    <span class="featured-metric__value">Nucleus 6 · 7 · 8 · +</span>
+                                    <span class="featured-metric__label">Purpose</span>
+                                    <span class="featured-metric__value">Code analysis · Refactoring · AI chat</span>
                                 </div>
+
                                 <div class="featured-metric">
                                     <span class="featured-metric__label">Focus</span>
-                                    <span class="featured-metric__value">Clarity, UX, accessibility</span>
+                                    <span class="featured-metric__value">Speed, clarity, developer workflow</span>
                                 </div>
+
                                 <div class="featured-metric">
                                     <span class="featured-metric__label">Tech stack</span>
-                                    <span class="featured-metric__value">Vue · JS · Node · MySQL</span>
+                                    <span class="featured-metric__value">TypeScript · Node.js · Local AI</span>
                                 </div>
 
                                 <div class="featured-card__divider"></div>
 
                                 <div class="featured-card__grid">
                                     <div class="featured-card__chip">
-                                        <span class="chip-label">Sections</span>
-                                        <span class="chip-value">Intro · 3D view · Users · Reviews · Contact</span>
+                                        <span class="chip-label">Capabilities</span>
+                                        <span class="chip-value">Code review · Explanations · File search</span>
                                     </div>
                                     <div class="featured-card__chip">
                                         <span class="chip-label">Patterns</span>
-                                        <span class="chip-value">Clean typography, step-by-step info, subtle motion</span>
+                                        <span class="chip-value">Clean CLI · Modular logic · Fast responses</span>
                                     </div>
                                 </div>
                             </div>
@@ -364,19 +421,22 @@
                             <div class="featured-footnote">
                                 <i class="fa-solid fa-arrow-trend-up"></i>
                                 <span>
-                                    Built as a portfolio piece that could scale into a real patient / clinic tool.
+                                    Built to explore how a local AI can replace cloud-based code helpers.
                                 </span>
                             </div>
 
-                            <!-- Decorative floating arrows inside card -->
+                            <!-- Decorative floating arrows -->
                             <div class="featured-arrows">
                                 <span></span><span></span><span></span>
                             </div>
+
                         </div>
                     </div>
+
                 </div>
             </div>
         </section>
+
 
         <!-- PROJECTS -->
         <section id="projects" class="section js-section" data-section="3">
@@ -392,88 +452,80 @@
 
                 <div class="projects-grid">
 
-                    <!-- Project 1 -->
+                    <!-- Project 1 – Nexora -->
                     <article class="project-card tilt reveal" data-delay="0.1s">
                         <div class="project-card__header">
-                            <span class="pill">Web app</span>
+                            <span class="pill">AI assistant</span>
                             <span class="project-card__year">2025</span>
                         </div>
-                        <h3>Cochlear Nucleus platform</h3>
+                        <h3>Nexora – local code chatbot</h3>
                         <p>
-                            A web experience that explains Cochlear hearing devices (Nucleus 6, 7, 8…)
-                            through clean sections, transitions and a structured database model.
+                            A local AI assistant that helps with code, structure and workflows.
+                            Built as a practical tool to experiment with LLMs and full-stack patterns,
+                            not just a simple demo.
                         </p>
                         <ul class="project-card__tags">
-                            <li>Vue</li>
-                            <li>JavaScript</li>
+                            <li>TypeScript</li>
                             <li>Node.js</li>
-                            <li>MySQL</li>
+                            <li>Local AI</li>
+                            <li>CLI / tooling</li>
                         </ul>
                         <div class="project-card__links">
-                            <a href="https://github.com/your-github-username/cochlear-project" target="_blank">
+                            <a href="https://github.com/Armin-000/Nexora" target="_blank">
                                 <i class="fa-brands fa-github"></i>
                                 <span>Code on GitHub</span>
-                            </a>
-                            <a href="#" target="_blank">
-                                <span>Live demo</span>
-                                <i class="fa-solid fa-arrow-up-right-from-square"></i>
                             </a>
                         </div>
                     </article>
 
-                    <!-- Project 2 -->
+                    <!-- Project 2 – 3D Models Nucleus -->
                     <article class="project-card tilt reveal" data-delay="0.18s">
                         <div class="project-card__header">
-                            <span class="pill">Platform</span>
-                            <span class="project-card__year">2024</span>
+                            <span class="pill">3D web</span>
+                            <span class="project-card__year">2025</span>
                         </div>
-                        <h3>Car dealership – buy & sell</h3>
+                        <h3>3D Cochlear Nucleus models</h3>
                         <p>
-                            A system for selling, buying and evaluating cars, with an admin area,
-                            database integration and carefully designed vehicle cards.
+                            Real-time Cochlear implant models rendered in the browser.
+                            Focus on clear 3D presentation, camera control and a calm UI
+                            that explains complex medical devices.
                         </p>
                         <ul class="project-card__tags">
-                            <li>HTML · CSS · JS</li>
-                            <li>Bootstrap</li>
-                            <li>PHP</li>
-                            <li>MySQL</li>
+                            <li>Three.js</li>
+                            <li>JavaScript</li>
+                            <li>CSS</li>
+                            <li>UX / animations</li>
                         </ul>
                         <div class="project-card__links">
-                            <a href="https://github.com/your-github-username/car-dealership" target="_blank">
+                            <a href="https://github.com/Armin-000/3D-Models-Nucleus" target="_blank">
                                 <i class="fa-brands fa-github"></i>
                                 <span>Code on GitHub</span>
-                            </a>
-                            <a href="#" target="_blank">
-                                <span>Live version</span>
-                                <i class="fa-solid fa-arrow-up-right-from-square"></i>
                             </a>
                         </div>
                     </article>
 
-                    <!-- Project 3 – template -->
+                    <!-- Project 3 – Meteor game -->
                     <article class="project-card tilt reveal" data-delay="0.26s">
                         <div class="project-card__header">
-                            <span class="pill">Custom project</span>
-                            <span class="project-card__year">Soon</span>
+                            <span class="pill">Game</span>
+                            <span class="project-card__year">2024</span>
                         </div>
-                        <h3>[Your next project]</h3>
+                        <h3>Meteor arcade game</h3>
                         <p>
-                            A slot for your upcoming work. Describe what it solves, why it exists
-                            and which technologies power it.
+                            Small JavaScript game with a spaceship and meteors – practice for
+                            game loops, collision detection, controls and UI feedback in a clean,
+                            minimal style.
                         </p>
                         <ul class="project-card__tags">
-                            <li>Technology 1</li>
-                            <li>Technology 2</li>
-                            <li>Technology 3</li>
+                            <li>JavaScript</li>
+                            <li>HTML Canvas</li>
+                            <li>Game logic</li>
+                            <li>Animations</li>
                         </ul>
                         <div class="project-card__links">
-                            <a href="https://github.com/your-github-username" target="_blank">
+                            <a href="https://github.com/Armin-000/Meteor-game" target="_blank">
                                 <i class="fa-brands fa-github"></i>
-                                <span>GitHub profile</span>
-                            </a>
-                            <a href="#" target="_blank">
-                                <span>Add live link</span>
-                                <i class="fa-solid fa-arrow-up-right-from-square"></i>
+                                <span>Code on GitHub</span>
                             </a>
                         </div>
                     </article>
@@ -482,49 +534,60 @@
             </div>
         </section>
 
+
         <!-- STACK -->
         <section id="stack" class="section js-section" data-section="4">
             <div class="section__inner">
+
                 <header class="section__header reveal" data-delay="0.05s">
                     <p class="eyebrow">TECH STACK</p>
                     <h2>Tools I actually use</h2>
                     <p class="section__intro">
-                        I don’t stack tools just to list them. I use what makes sense for a project
-                        and keep the stack understandable and under control.
+                        I build with tools that make the most sense for structure, clarity and long-term projects.
+                        My workflow combines frontend, backend, databases and modern local AI assistants.
                     </p>
                 </header>
 
                 <div class="stack-grid">
 
+                    <!-- FRONTEND -->
                     <div class="stack-col reveal" data-delay="0.1s">
                         <h3>Frontend</h3>
                         <ul class="stack-list">
                             <li>Semantic HTML5</li>
-                            <li>Modern CSS (Flexbox, Grid)</li>
+                            <li>CSS · SCSS · responsive layouts</li>
                             <li>JavaScript (ES6+)</li>
-                            <li>Vue (components, basic routing)</li>
+                            <li>TypeScript / TSX</li>
+                            <li>React (components, hooks, UI structure)</li>
+                            <li>Vue (component logic + transitions)</li>
+                            <li>Three.js (3D models & camera control)</li>
                             <li>Animations & micro-interactions</li>
-                            <li>Responsive layouts</li>
                         </ul>
                     </div>
 
+                    <!-- BACKEND + DATABASE -->
                     <div class="stack-col reveal" data-delay="0.18s">
-                        <h3>Backend & DB</h3>
+                        <h3>Backend & Database</h3>
                         <ul class="stack-list">
-                            <li>PHP basics</li>
-                            <li>Node.js / Express</li>
-                            <li>MySQL (HeidiSQL)</li>
+                            <li>Node.js / Express (API & logic)</li>
+                            <li>PHP basics (backend templates + forms)</li>
+                            <li>MySQL / HeidiSQL (data modelling)</li>
                             <li>REST API integrations</li>
+                            <li>Authentication & structured endpoints</li>
+                            <li>Full-stack flow planning</li>
                         </ul>
                     </div>
 
+                    <!-- TOOLS + WORKFLOW -->
                     <div class="stack-col reveal" data-delay="0.26s">
-                        <h3>Tools & mindset</h3>
+                        <h3>Tools & workflow</h3>
                         <ul class="stack-list">
                             <li>Git / GitHub</li>
                             <li>VS Code / Visual Studio</li>
-                            <li>Vite and npm scripts</li>
-                            <li>Readable, structured code</li>
+                            <li>Vite & npm scripts</li>
+                            <li>Ollama (local AI models)</li>
+                            <li>Nexora (custom AI development)</li>
+                            <li>Readable, structured codebase</li>
                             <li>Performance-aware decisions</li>
                         </ul>
                     </div>
@@ -534,13 +597,17 @@
                 <!-- Small chips -->
                 <div class="stack-chips reveal" data-delay="0.32s">
                     <span>components</span>
+                    <span>API design</span>
                     <span>admin dashboards</span>
-                    <span>pagination</span>
+                    <span>3D interactions</span>
                     <span>form validation</span>
                     <span>database models</span>
+                    <span>AI-assisted workflow</span>
                 </div>
+
             </div>
         </section>
+
 
         <!-- CONTACT -->
         <section id="contact" class="section js-section" data-section="5">
@@ -555,62 +622,99 @@
                 </header>
 
                 <div class="contact-grid">
+
+                    <!-- LEFT SIDE: CONTACT DETAILS + PROFILE IMAGE -->
                     <div class="contact-grid__left reveal" data-delay="0.1s">
+
                         <div class="contact-item">
                             <span class="label">E-mail</span>
-                            <a href="mailto:your-email@example.com" class="value">
-                                your-email@example.com
+                            <a href="mailto:armin.lisic000@gmail.com" class="value">
+                                armin.lisic000@gmail.com
                             </a>
                         </div>
+
                         <div class="contact-item">
                             <span class="label">GitHub</span>
-                            <a href="https://github.com/your-github-username" target="_blank" class="value">
-                                github.com/your-github-username
+                            <a href="https://github.com/Armin-000" target="_blank" class="value">
+                                github.com/Armin-000
                             </a>
                         </div>
+
                         <div class="contact-item">
                             <span class="label">Location</span>
                             <span class="value">Croatia</span>
                         </div>
+
+                        <!-- PROFILE IMAGE UNDER CONTACT INFO -->
+                        <div class="contact-avatar">
+                            <img src="img/Portfolio.jpg"
+                                alt="Armin – web developer"
+                                class="contact-profile-image">
+                        </div>
                     </div>
 
+                    <!-- RIGHT SIDE: FORM -->
                     <div class="contact-grid__right reveal" data-delay="0.18s">
                         <div class="contact-card">
                             <h3>Quick message (frontend demo)</h3>
-                            <form class="contact-form" onsubmit="event.preventDefault();">
+                            <form class="contact-form">
+
                                 <div class="form-row">
                                     <label for="name">Name</label>
                                     <input id="name" type="text" placeholder="Your name" autocomplete="off" />
                                 </div>
+
                                 <div class="form-row">
                                     <label for="email">E-mail</label>
                                     <input id="email" type="email" placeholder="your-email@example.com" autocomplete="off" />
                                 </div>
+
                                 <div class="form-row">
                                     <label for="message">Message</label>
                                     <textarea id="message" rows="4" placeholder="Write a short message..."></textarea>
                                 </div>
-                                <button class="btn btn--primary btn--full" type="submit">
-                                    <span>Send (demo)</span>
+
+                                <!-- Send email -->
+                                <a href="mailto:armin.lisic000@gmail.com" class="btn btn--primary btn--full">
+                                    <span>Send</span>
                                     <i class="fa-solid fa-paper-plane"></i>
-                                </button>
+                                </a>
+
                                 <p class="form-note">
                                     *This form is frontend-only right now. You can later connect it to a backend and database.
                                 </p>
                             </form>
                         </div>
                     </div>
-                </div>
 
+                </div>
             </div>
         </section>
+
     </main>
 
     <!-- FOOTER -->
+    <!-- FOOTER -->
     <footer class="footer">
         <div class="footer__inner">
-            <span>© <span id="year"></span> Armin.</span>
-            <span>Black & white portfolio with attention to detail.</span>
+
+            <div class="footer__left">
+                <span>© <span id="year"></span> Armin.</span><br>
+                <span>Black & white portfolio with attention to detail.</span>
+            </div>
+
+            <div class="footer__social">
+                <a href="https://www.facebook.com/armin.lisic" target="_blank" aria-label="Facebook">
+                    <i class="fa-brands fa-facebook-f"></i>
+                </a>
+                <a href="https://www.instagram.com/arminlisic/" target="_blank" aria-label="Instagram">
+                    <i class="fa-brands fa-instagram"></i>
+                </a>
+                <a href="https://github.com/Armin-000" target="_blank" aria-label="GitHub">
+                    <i class="fa-brands fa-github"></i>
+                </a>
+            </div>
+
         </div>
     </footer>
 </div>
