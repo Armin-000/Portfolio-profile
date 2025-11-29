@@ -1,126 +1,197 @@
 <!DOCTYPE html>
-    <html lang="en">
-        <head>
-            <!-- Basic meta -->
-            <meta charset="UTF-8" />
-            <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<html lang="en">
+<head>
+    <!-- Basic meta -->
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-            <!-- SEO -->
-            <title>Armin – Portfolio</title>
-            <meta name="description"
-                content="Armin – full-stack web developer focused on clean UX, local AI (Ollama / Nexora), 3D Cochlear models and structured applications.">
+    <!-- ========================================================= -->
+    <!-- SEO CORE -->
+    <!-- ========================================================= -->
 
-            <!-- Open Graph -->
-            <meta property="og:title" content="Armin – Web Developer">
-            <meta property="og:description"
-                content="Black & white portfolio with Nexora, local AI experiments, 3D Cochlear and full-stack projects.">
-            <meta property="og:type" content="website">
-            <meta property="og:image" content="https://armin-lisic-portfolio.netlify.app/img/Portfolio.webp">
-            <meta property="og:url" content="https://armin-lisic-portfolio.netlify.app/">
+    <title>Armin Lišić – Full-Stack Web Developer & Local AI</title>
 
-            <!-- Favicon -->
-            <link rel="icon" type="image/png" sizes="32x32" href="img/favicon.ico" />
+    <meta name="description"
+        content="Armin Lišić – full-stack web developer from Croatia focused on clean UX, local AI (Ollama & Nexora), 3D Cochlear models and structured full-stack applications." />
 
-            <!-- ========================================================= -->
-            <!-- GOOGLE FONTS (preconnect + preload + lazy load) -->
-            <!-- ========================================================= -->
-            <link rel="preconnect" href="https://fonts.googleapis.com">
-            <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <meta name="author" content="Armin Lišić" />
 
-            <link
-                rel="preload"
-                as="style"
-                href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@500;600&display=swap"
-            />
+    <!-- Keywords -->
+    <meta name="keywords"
+        content="Armin Lišić, full-stack web developer, local AI, Ollama, Nexora, 3D Cochlear models, Three.js, Node.js, PHP, MySQL, Croatia, web apps, UX, JavaScript, TypeScript" />
 
-            <link
-                rel="stylesheet"
-                href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@500;600&display=swap"
-                media="print"
-                onload="this.media='all'"
-            />
+    <!-- Canonical URL + robots -->
+    <link rel="canonical" href="https://armin-lisic-portfolio.netlify.app/" />
+    <meta name="robots" content="index, follow" />
 
-            <noscript>
-                <link
-                    rel="stylesheet"
-                    href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@500;600&display=swap"
-                />
-            </noscript>
+    <!-- Browser / mobile theme color -->
+    <meta name="theme-color" content="#050505" />
 
-            <!-- ========================================================= -->
-            <!-- FONT AWESOME (preload + lazy load) -->
-            <!-- ========================================================= -->
-            <link
-                rel="preload"
-                as="style"
-                href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
-                crossorigin="anonymous"
-            />
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" href="img/user.ico">
+    <link rel="icon" type="image/png" sizes="32x32" href="img/user.ico">
 
-            <link
-                rel="stylesheet"
-                href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
-                crossorigin="anonymous"
-                referrerpolicy="no-referrer"
-                media="print"
-                onload="this.media='all'"
-            />
+    <!-- ========================================================= -->
+    <!-- OPEN GRAPH (Facebook, LinkedIn, itd.) -->
+    <!-- ========================================================= -->
 
-            <noscript>
-                <link
-                    rel="stylesheet"
-                    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
-                    crossorigin="anonymous"
-                    referrerpolicy="no-referrer"
-                />
-            </noscript>
+    <meta property="og:title" content="Armin Lišić – Full-Stack Web Developer & Local AI" />
+    <meta property="og:description"
+        content="Black & white portfolio s fokusom na lokalni AI (Ollama & Nexora), 3D Cochlear modele, full-stack web aplikacije i čistu UX strukturu." />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://armin-lisic-portfolio.netlify.app/" />
+    <meta property="og:image" content="https://armin-lisic-portfolio.netlify.app/img/Portfolio.webp" />
+    <meta property="og:site_name" content="Armin – Portfolio" />
+    <meta property="og:locale" content="en_US" />
 
-            <!-- ========================================================= -->
-            <!-- MAIN CSS (minified) -->
-            <!-- ========================================================= -->
-            <link rel="preload" href="style.min.css" as="style" />
-            <link rel="stylesheet" href="style.min.css" />
-        </head>
-    <body>
+    <!-- ========================================================= -->
+    <!-- GOOGLE FONTS (preconnect + preload + lazy load) -->
+    <!-- ========================================================= -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 
-    <!-- PRELOADER OVERLAY -->
+    <link
+        rel="preload"
+        as="style"
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@500;600&display=swap"
+    />
+
+    <link
+        rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@500;600&display=swap"
+        media="print"
+        onload="this.media='all'"
+    />
+
+    <noscript>
+        <link
+            rel="stylesheet"
+            href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@500;600&display=swap"
+        />
+    </noscript>
+
+    <!-- ========================================================= -->
+    <!-- FONT AWESOME (preload + lazy load) -->
+    <!-- ========================================================= -->
+    <link
+        rel="preload"
+        as="style"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
+        crossorigin="anonymous"
+    />
+
+    <link
+        rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
+        crossorigin="anonymous"
+        referrerpolicy="no-referrer"
+        media="print"
+        onload="this.media='all'"
+    />
+
+    <noscript>
+        <link
+            rel="stylesheet"
+            href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
+            crossorigin="anonymous"
+            referrerpolicy="no-referrer"
+        />
+    </noscript>
+
+    <!-- ========================================================= -->
+    <!-- MAIN CSS (minified) -->
+    <!-- ========================================================= -->
+    <link rel="preload" href="style.min.css" as="style" />
+    <link rel="stylesheet" href="style.min.css" />
+
+    <!-- ========================================================= -->
+    <!-- SCHEMA.ORG (JSON-LD) – PERSON + WEBSITE -->
+    <!-- ========================================================= -->
+    <script type="application/ld+json">
+    {
+    "@context": "https://schema.org",
+    "@graph": [
+        {
+        "@type": "Person",
+        "@id": "https://armin-lisic-portfolio.netlify.app/#armin",
+        "name": "Armin Lišić",
+        "alternateName": "Armin-000",
+        "description": "Junior full-stack web developer focused on local AI tools (Ollama, Nexora), clean UX, 3D Cochlear models and structured web applications.",
+        "jobTitle": "Full-Stack Web Developer",
+        "url": "https://armin-lisic-portfolio.netlify.app/",
+        "image": "https://armin-lisic-portfolio.netlify.app/img/Portfolio.webp",
+        "address": {
+            "@type": "PostalAddress",
+            "addressCountry": "HR"
+        },
+        "sameAs": [
+            "https://github.com/Armin-000",
+            "https://www.facebook.com/armin.lisic",
+            "https://www.instagram.com/arminlisic/"
+        ]
+        },
+        {
+        "@type": "WebSite",
+        "@id": "https://armin-lisic-portfolio.netlify.app/#website",
+        "url": "https://armin-lisic-portfolio.netlify.app/",
+        "name": "Armin – Portfolio",
+        "description": "Black & white portfolio of Armin Lišić, full-stack web developer focused on local AI, 3D Cochlear models and structured applications.",
+        "publisher": {
+            "@id": "https://armin-lisic-portfolio.netlify.app/#armin"
+        },
+        "inLanguage": "en"
+        }
+    ]
+    }
+    </script>
+</head>
+
+<body>
+    <!-- ========================================================= -->
+    <!-- PRELOADER OVERLAY START -->
+    <!-- ========================================================= -->
     <div class="preloader" aria-hidden="true">
-    <!-- Dekor (linije + strelice) -->
-    <div class="preloader__decor" aria-hidden="true">
-        <div class="preloader-lines preloader-lines--one">
-        <span></span><span></span><span></span><span></span>
-        </div>
-        <div class="preloader-lines preloader-lines--two">
-        <span></span><span></span><span></span><span></span>
+        <!-- Dekor (linije + strelice) -->
+        <div class="preloader__decor" aria-hidden="true">
+            <div class="preloader-lines preloader-lines--one">
+                <span></span><span></span><span></span><span></span>
+            </div>
+            <div class="preloader-lines preloader-lines--two">
+                <span></span><span></span><span></span><span></span>
+            </div>
+
+            <div class="preloader-arrows">
+                <span></span><span></span><span></span><span></span><span></span>
+            </div>
         </div>
 
-        <div class="preloader-arrows">
-        <span></span><span></span><span></span><span></span><span></span>
+        <!-- Blur + ploča u sredini -->
+        <div class="preloader__backdrop"></div>
+
+        <div class="preloader__content">
+            <div class="preloader__mark">
+                <span class="preloader__initial">A</span>
+            </div>
+
+            <div class="preloader__text">
+                <p class="preloader__label">Preparing portfolio</p>
+                <p class="preloader__title">Armin – Web Developer</p>
+            </div>
+
+            <div class="preloader__bar">
+                <span class="preloader__bar-fill"></span>
+            </div>
+
+            <p class="preloader__hint">Calm UI · Local AI · Clean flow</p>
         </div>
     </div>
+    <!-- ========================================================= -->
+    <!-- PRELOADER OVERLAY END -->
+    <!-- ========================================================= -->
 
-    <!-- Blur + ploča u sredini -->
-    <div class="preloader__backdrop"></div>
-
-    <div class="preloader__content">
-        <div class="preloader__mark">
-        <span class="preloader__initial">A</span>
-        </div>
-
-        <div class="preloader__text">
-        <p class="preloader__label">Preparing portfolio</p>
-        <p class="preloader__title">Armin – Web Developer</p>
-        </div>
-
-        <div class="preloader__bar">
-        <span class="preloader__bar-fill"></span>
-        </div>
-
-        <p class="preloader__hint">Calm UI · Local AI · Clean flow</p>
-    </div>
-    </div>
-
-    <!-- BACKGROUND DECORATIONS: LINES + FLOATING ARROWS -->
+    <!-- ========================================================= -->
+    <!-- BACKGROUND DECORATIONS START (LINES + FLOATING ARROWS) -->
+    <!-- ========================================================= -->
     <div class="bg-lines" aria-hidden="true">
         <div class="bg-lines__layer bg-lines__layer--one">
             <span></span><span></span><span></span>
@@ -136,9 +207,17 @@
         <span></span><span></span><span></span><span></span><span></span>
         <span></span><span></span><span></span><span></span><span></span>
     </div>
+    <!-- ========================================================= -->
+    <!-- BACKGROUND DECORATIONS END -->
+    <!-- ========================================================= -->
 
+    <!-- ========================================================= -->
+    <!-- PAGE WRAPPER START -->
+    <!-- ========================================================= -->
     <div class="page">
-        <!-- TOP NAVBAR -->
+        <!-- ===================================================== -->
+        <!-- TOP NAVBAR / HEADER START -->
+        <!-- ===================================================== -->
         <header class="topbar">
             <div class="topbar__inner">
                 <!-- Brand -->
@@ -157,8 +236,8 @@
                     <ul class="nav__list">
                         <li>
                             <a href="#home"
-                               class="nav__link js-scroll-link nav__link--active"
-                               aria-current="page">
+                                class="nav__link js-scroll-link nav__link--active"
+                                aria-current="page">
                                 Portfolio
                             </a>
                         </li>
@@ -189,12 +268,13 @@
                         </li>
                     </ul>
                 </nav>
+                <!-- END Primary navigation -->
 
                 <!-- GitHub CTA -->
                 <a href="https://github.com/Armin-000"
-                   target="_blank"
-                   rel="noreferrer"
-                   class="topbar__github">
+                    target="_blank"
+                    rel="noreferrer"
+                    class="topbar__github">
                     <i class="fa-brands fa-github" aria-hidden="true"></i>
                     <span>GitHub</span>
                 </a>
@@ -215,8 +295,13 @@
                 <div class="topbar__progress-bar" id="scrollProgress"></div>
             </div>
         </header>
+        <!-- ===================================================== -->
+        <!-- TOP NAVBAR / HEADER END -->
+        <!-- ===================================================== -->
 
-        <!-- DOT NAVIGATION ON THE RIGHT -->
+        <!-- ===================================================== -->
+        <!-- DOT NAVIGATION START (RIGHT SIDE) -->
+        <!-- ===================================================== -->
         <aside class="dot-nav" aria-label="Section quick navigation">
             <button class="dot-nav__item dot-nav__item--active"
                     type="button"
@@ -249,14 +334,21 @@
                     aria-label="Go to Contact section">
             </button>
         </aside>
+        <!-- ===================================================== -->
+        <!-- DOT NAVIGATION END -->
+        <!-- ===================================================== -->
 
-        <!-- MAIN CONTENT -->
+        <!-- ===================================================== -->
+        <!-- MAIN CONTENT START -->
+        <!-- ===================================================== -->
         <main class="main" id="primary-content">
-            <!-- HERO / HOME -->
+            <!-- ================================================ -->
+            <!-- HERO / HOME SECTION START -->
+            <!-- ================================================ -->
             <section id="home"
-                     class="section section--hero js-section"
-                     data-section="0"
-                     aria-labelledby="home-title">
+                    class="section section--hero js-section"
+                    data-section="0"
+                    aria-labelledby="home-title">
                 <div class="section__inner">
                     <div class="hero">
                         <!-- Left column -->
@@ -266,8 +358,8 @@
                             <h1 class="hero__title" id="home-title">
                                 <span class="sr-only">Armin – Web Developer</span>
                                 <img src="img/Portfolio.webp"
-                                     alt="Portrait of Armin – web developer"
-                                     class="hero__profile-image">
+                                        alt="Portrait of Armin – web developer"
+                                        class="hero__profile-image">
                             </h1>
 
                             <p class="hero__subtitle">
@@ -279,14 +371,14 @@
 
                             <div class="hero__actions">
                                 <a href="#projects"
-                                   class="btn btn--primary js-scroll-link">
+                                    class="btn btn--primary js-scroll-link">
                                     <span>View projects</span>
                                     <i class="fa-solid fa-arrow-right" aria-hidden="true"></i>
                                 </a>
                                 <a href="https://github.com/Armin-000"
-                                   target="_blank"
-                                   rel="noreferrer"
-                                   class="btn btn--ghost">
+                                    target="_blank"
+                                    rel="noreferrer"
+                                    class="btn btn--ghost">
                                     <i class="fa-brands fa-github" aria-hidden="true"></i>
                                     <span>GitHub profile</span>
                                 </a>
@@ -307,6 +399,7 @@
                                 </div>
                             </div>
                         </div>
+                        <!-- END Hero left -->
 
                         <!-- Right column – featured hero card -->
                         <div class="hero__right">
@@ -337,7 +430,7 @@
 
                                 <!-- Small stat cards -->
                                 <div class="hero-orbit__card hero-orbit__card--small hero-orbit__card--top reveal"
-                                     data-delay="0.18s">
+                                        data-delay="0.18s">
                                     <div class="stat-card">
                                         <span class="stat-card__label">Projects</span>
                                         <span class="stat-card__value">15+</span>
@@ -345,7 +438,7 @@
                                 </div>
 
                                 <div class="hero-orbit__card hero-orbit__card--small hero-orbit__card--bottom reveal"
-                                     data-delay="0.26s">
+                                        data-delay="0.26s">
                                     <div class="stat-card">
                                         <span class="stat-card__label">Core</span>
                                         <span class="stat-card__value">
@@ -355,6 +448,7 @@
                                 </div>
                             </div>
                         </div>
+                        <!-- END Hero right -->
                     </div>
 
                     <!-- Scroll hint -->
@@ -364,12 +458,17 @@
                     </div>
                 </div>
             </section>
+            <!-- ================================================ -->
+            <!-- HERO / HOME SECTION END -->
+            <!-- ================================================ -->
 
-            <!-- ABOUT + TIMELINE -->
+            <!-- ================================================ -->
+            <!-- ABOUT + TIMELINE SECTION START -->
+            <!-- ================================================ -->
             <section id="about"
-                     class="section js-section"
-                     data-section="1"
-                     aria-labelledby="about-title">
+                    class="section js-section"
+                    data-section="1"
+                    aria-labelledby="about-title">
                 <div class="section__inner">
                     <header class="section__header reveal" data-delay="0.05s">
                         <p class="eyebrow">ABOUT</p>
@@ -449,8 +548,8 @@
 
                     <!-- Timeline -->
                     <section class="timeline reveal"
-                             data-delay="0.32s"
-                             aria-label="Small timeline of experience">
+                            data-delay="0.32s"
+                            aria-label="Small timeline of experience">
                         <h3 class="timeline__title">Small timeline</h3>
 
                         <div class="timeline__list">
@@ -485,14 +584,20 @@
                             </article>
                         </div>
                     </section>
+                    <!-- END Timeline -->
                 </div>
             </section>
+            <!-- ================================================ -->
+            <!-- ABOUT + TIMELINE SECTION END -->
+            <!-- ================================================ -->
 
-            <!-- FEATURED SECTION -->
+            <!-- ================================================ -->
+            <!-- FEATURED SECTION START -->
+            <!-- ================================================ -->
             <section id="featured"
-                     class="section section--featured js-section"
-                     data-section="2"
-                     aria-labelledby="featured-title">
+                    class="section section--featured js-section"
+                    data-section="2"
+                    aria-labelledby="featured-title">
                 <div class="section__inner section__inner--featured">
                     <div class="featured">
                         <!-- Left side -->
@@ -526,19 +631,20 @@
 
                             <div class="featured__links">
                                 <a href="https://github.com/Armin-000/Nexora"
-                                   target="_blank"
-                                   rel="noreferrer"
-                                   class="btn btn--primary">
+                                    target="_blank"
+                                    rel="noreferrer"
+                                    class="btn btn--primary">
                                     <span>View GitHub repo</span>
                                     <i class="fa-brands fa-github" aria-hidden="true"></i>
                                 </a>
                                 <a href="#projects"
-                                   class="btn btn--ghost js-scroll-link">
+                                    class="btn btn--ghost js-scroll-link">
                                     <span>See other projects</span>
                                     <i class="fa-solid fa-arrow-right-long" aria-hidden="true"></i>
                                 </a>
                             </div>
                         </div>
+                        <!-- END Featured left -->
 
                         <!-- Right side -->
                         <div class="featured__right reveal" data-delay="0.14s">
@@ -604,15 +710,21 @@
                                 </div>
                             </article>
                         </div>
+                        <!-- END Featured right -->
                     </div>
                 </div>
             </section>
+            <!-- ================================================ -->
+            <!-- FEATURED SECTION END -->
+            <!-- ================================================ -->
 
-            <!-- PROJECTS -->
+            <!-- ================================================ -->
+            <!-- PROJECTS SECTION START -->
+            <!-- ================================================ -->
             <section id="projects"
-                     class="section js-section"
-                     data-section="3"
-                     aria-labelledby="projects-title">
+                    class="section js-section"
+                    data-section="3"
+                    aria-labelledby="projects-title">
                 <div class="section__inner">
                     <header class="section__header reveal" data-delay="0.05s">
                         <p class="eyebrow">PROJECTS</p>
@@ -644,8 +756,8 @@
                             </ul>
                             <div class="project-card__links">
                                 <a href="https://github.com/Armin-000/Nexora"
-                                   target="_blank"
-                                   rel="noreferrer">
+                                    target="_blank"
+                                    rel="noreferrer">
                                     <i class="fa-brands fa-github" aria-hidden="true"></i>
                                     <span>Code on GitHub</span>
                                 </a>
@@ -672,8 +784,8 @@
                             </ul>
                             <div class="project-card__links">
                                 <a href="https://github.com/Armin-000/3D-Models-Nucleus"
-                                   target="_blank"
-                                   rel="noreferrer">
+                                    target="_blank"
+                                    rel="noreferrer">
                                     <i class="fa-brands fa-github" aria-hidden="true"></i>
                                     <span>Code on GitHub</span>
                                 </a>
@@ -700,8 +812,8 @@
                             </ul>
                             <div class="project-card__links">
                                 <a href="https://github.com/Armin-000/Meteor-game"
-                                   target="_blank"
-                                   rel="noreferrer">
+                                    target="_blank"
+                                    rel="noreferrer">
                                     <i class="fa-brands fa-github" aria-hidden="true"></i>
                                     <span>Code on GitHub</span>
                                 </a>
@@ -710,12 +822,17 @@
                     </div>
                 </div>
             </section>
+            <!-- ================================================ -->
+            <!-- PROJECTS SECTION END -->
+            <!-- ================================================ -->
 
-            <!-- STACK -->
+            <!-- ================================================ -->
+            <!-- STACK SECTION START -->
+            <!-- ================================================ -->
             <section id="stack"
-                     class="section js-section"
-                     data-section="4"
-                     aria-labelledby="stack-title">
+                    class="section js-section"
+                    data-section="4"
+                    aria-labelledby="stack-title">
                 <div class="section__inner">
                     <header class="section__header reveal" data-delay="0.05s">
                         <p class="eyebrow">TECH STACK</p>
@@ -782,12 +899,17 @@
                     </div>
                 </div>
             </section>
+            <!-- ================================================ -->
+            <!-- STACK SECTION END -->
+            <!-- ================================================ -->
 
-            <!-- CONTACT -->
+            <!-- ================================================ -->
+            <!-- CONTACT SECTION START -->
+            <!-- ================================================ -->
             <section id="contact"
-                     class="section js-section"
-                     data-section="5"
-                     aria-labelledby="contact-title">
+                    class="section js-section"
+                    data-section="5"
+                    aria-labelledby="contact-title">
                 <div class="section__inner">
                     <header class="section__header reveal" data-delay="0.05s">
                         <p class="eyebrow">CONTACT</p>
@@ -801,22 +923,22 @@
                         <!-- Avatar -->
                         <div class="contact-avatar">
                             <img src="img/Portfolio.webp"
-                                 alt="Armin – web developer"
-                                 class="contact-profile-image">
+                                    alt="Armin – web developer"
+                                    class="contact-profile-image">
                         </div>
 
                         <!-- Actions -->
                         <div class="contact-actions">
                             <a href="mailto:armin.lisic000@gmail.com"
-                               class="btn btn--primary btn--large">
+                                class="btn btn--primary btn--large">
                                 <span>Contact Us</span>
                                 <i class="fa-solid fa-paper-plane" aria-hidden="true"></i>
                             </a>
 
                             <a href="https://github.com/Armin-000"
-                               target="_blank"
-                               rel="noreferrer"
-                               class="btn btn--ghost">
+                                target="_blank"
+                                rel="noreferrer"
+                                class="btn btn--ghost">
                                 <span>GitHub</span>
                                 <i class="fa-brands fa-github" aria-hidden="true"></i>
                             </a>
@@ -824,9 +946,17 @@
                     </div>
                 </div>
             </section>
+            <!-- ================================================ -->
+            <!-- CONTACT SECTION END -->
+            <!-- ================================================ -->
         </main>
+        <!-- ===================================================== -->
+        <!-- MAIN CONTENT END -->
+        <!-- ===================================================== -->
 
-        <!-- FOOTER -->
+        <!-- ===================================================== -->
+        <!-- FOOTER START -->
+        <!-- ===================================================== -->
         <footer class="footer">
             <div class="footer__inner">
                 <div class="footer__left">
@@ -840,29 +970,40 @@
 
                 <div class="footer__social" aria-label="Social links">
                     <a href="https://www.facebook.com/armin.lisic"
-                       target="_blank"
-                       rel="noreferrer"
-                       aria-label="Facebook">
+                        target="_blank"
+                        rel="noreferrer"
+                        aria-label="Facebook">
                         <i class="fa-brands fa-facebook-f" aria-hidden="true"></i>
                     </a>
                     <a href="https://www.instagram.com/arminlisic/"
-                       target="_blank"
-                       rel="noreferrer"
-                       aria-label="Instagram">
+                        target="_blank"
+                        rel="noreferrer"
+                        aria-label="Instagram">
                         <i class="fa-brands fa-instagram" aria-hidden="true"></i>
                     </a>
                     <a href="https://github.com/Armin-000"
-                       target="_blank"
-                       rel="noreferrer"
-                       aria-label="GitHub">
+                        target="_blank"
+                        rel="noreferrer"
+                        aria-label="GitHub">
                         <i class="fa-brands fa-github" aria-hidden="true"></i>
                     </a>
                 </div>
             </div>
         </footer>
+        <!-- ===================================================== -->
+        <!-- FOOTER END -->
+        <!-- ===================================================== -->
     </div>
+    <!-- ========================================================= -->
+    <!-- PAGE WRAPPER END -->
+    <!-- ========================================================= -->
 
-    <!-- Scripts -->
+    <!-- ========================================================= -->
+    <!-- SCRIPTS START -->
+    <!-- ========================================================= -->
     <script src="script.js" defer></script>
+    <!-- ========================================================= -->
+    <!-- SCRIPTS END -->
+    <!-- ========================================================= -->
 </body>
 </html>
