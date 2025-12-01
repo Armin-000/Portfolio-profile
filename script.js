@@ -1,16 +1,11 @@
 document.addEventListener("DOMContentLoaded", () => {
-    /**
-     * Small helpers
-     */
     const $ = (selector, scope = document) => scope.querySelector(selector);
     const $$ = (selector, scope = document) => Array.from(scope.querySelectorAll(selector));
 
     const hasIntersectionObserver = "IntersectionObserver" in window;
     const body = document.body;
+    const prefersReducedMotion = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
 
-        /* =========================================================
-       PRELOADER LOGIC
-       ========================================================= */
     const preloader = $(".preloader");
     const heroInner = $(".section--hero .section__inner");
 
@@ -20,24 +15,23 @@ document.addEventListener("DOMContentLoaded", () => {
         const triggerHeroIntro = () => {
             if (!heroInner) return;
             heroInner.classList.add("hero-pop-in");
-
-            // makni klasu nakon animacije da ne utječe kasnije
             setTimeout(() => {
                 heroInner.classList.remove("hero-pop-in");
             }, 900);
         };
 
         const hidePreloader = () => {
-            // Ako je već sakriven, ne radimo ništa
             if (preloader.classList.contains("preloader--hide")) return;
 
             preloader.classList.add("preloader--hide");
             body.classList.remove("is-preloading");
 
-            // pokreni hero pop-in animaciju
+            if (!prefersReducedMotion) {
+                body.classList.add("decor-animated");
+            }
+
             triggerHeroIntro();
 
-            // (Opcija) nakon animacije maknuti iz DOM-a
             setTimeout(() => {
                 if (preloader.parentNode) {
                     preloader.parentNode.removeChild(preloader);
@@ -45,32 +39,28 @@ document.addEventListener("DOMContentLoaded", () => {
             }, 800);
         };
 
-        // Cilj: ~3 sekunde osjećaja “introa”
-        const MIN_DURATION = 3000;
+        const MIN_DURATION = 300;
         const startTime = performance.now();
 
-        // Kada se sve (slike, CSS, itd.) učita:
-        window.addEventListener("load", () => {
+        const finishPreloader = () => {
             const elapsed = performance.now() - startTime;
             const remaining = Math.max(MIN_DURATION - elapsed, 0);
             setTimeout(hidePreloader, remaining);
-        });
+        };
 
-        // Sigurnosni fallback – ako se iz nekog razloga "load" ne okine
-        setTimeout(hidePreloader, MIN_DURATION + 2000);
+        window.addEventListener("load", finishPreloader);
+        setTimeout(finishPreloader, 8000);
+    } else {
+        if (!prefersReducedMotion) {
+            body.classList.add("decor-animated");
+        }
     }
 
-    /* =========================================================
-       1. FOOTER YEAR
-       ========================================================= */
     const yearSpan = $("#year");
     if (yearSpan) {
         yearSpan.textContent = String(new Date().getFullYear());
     }
 
-    /* =========================================================
-       2. SMOOTH SCROLL
-       ========================================================= */
     const scrollToHash = (hash, options = {}) => {
         if (!hash || !hash.startsWith("#")) return;
 
@@ -83,9 +73,6 @@ document.addEventListener("DOMContentLoaded", () => {
         target.scrollIntoView({ behavior, block });
     };
 
-    /* =========================================================
-       3. MOBILE NAVIGATION
-       ========================================================= */
     const navToggle = $(".nav-toggle");
     const nav = $(".nav");
     const scrollLinks = $$(".js-scroll-link");
@@ -114,28 +101,20 @@ document.addEventListener("DOMContentLoaded", () => {
         navToggle.addEventListener("click", toggleNav);
     }
 
-    /* =========================================================
-       4. LINK HANDLING (TOP NAV + IN-PAGE LINKS)
-       ========================================================= */
     scrollLinks.forEach(link => {
         link.addEventListener("click", event => {
             const href = link.getAttribute("href");
-
             if (!href || !href.startsWith("#")) return;
 
             event.preventDefault();
             scrollToHash(href);
 
-            // Ako je bio otvoren mobilni meni – zatvori ga
             if (body.classList.contains("nav-open")) {
                 closeNav();
             }
         });
     });
 
-    /* =========================================================
-       5. DOT NAVIGATION (DESNO)
-       ========================================================= */
     const dotButtons = $$(".dot-nav__item");
 
     dotButtons.forEach(btn => {
@@ -146,9 +125,6 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     });
 
-    /* =========================================================
-       6. SCROLL REVEAL
-       ========================================================= */
     const revealEls = $$(".reveal");
 
     if (hasIntersectionObserver && revealEls.length) {
@@ -172,13 +148,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
         revealEls.forEach(el => revealObserver.observe(el));
     } else {
-        // Fallback bez IntersectionObservera
         revealEls.forEach(el => el.classList.add("in-view"));
     }
 
-    /* =========================================================
-       7. SCROLLSPY (TOP NAV + DOT-NAV)
-       ========================================================= */
     const sections = $$(".js-section");
     const topNavLinks = $$(".nav__link");
 
@@ -189,7 +161,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
                 const id = `#${entry.target.id}`;
 
-                // Top nav active state
                 topNavLinks.forEach(link => {
                     link.classList.toggle(
                         "nav__link--active",
@@ -197,7 +168,6 @@ document.addEventListener("DOMContentLoaded", () => {
                     );
                 });
 
-                // Dot nav active state
                 dotButtons.forEach(btn => {
                     const target = btn.getAttribute("data-target");
                     btn.classList.toggle("dot-nav__item--active", target === id);
@@ -210,9 +180,6 @@ document.addEventListener("DOMContentLoaded", () => {
         sections.forEach(section => spyObserver.observe(section));
     }
 
-    /* =========================================================
-       8. SCROLL PROGRESS BAR
-       ========================================================= */
     const progressBar = $("#scrollProgress");
     if (progressBar) {
         let ticking = false;
@@ -233,11 +200,7 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
-    /* =========================================================
-       9. HERO ORBIT PARALLAX (DESKTOP SAMO)
-       ========================================================= */
     const heroOrbit = $("#heroOrbit");
-    const prefersReducedMotion = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
 
     if (heroOrbit && window.matchMedia("(pointer: fine)").matches && !prefersReducedMotion) {
         const baseTransform = "perspective(900px)";
