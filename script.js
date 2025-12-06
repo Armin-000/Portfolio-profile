@@ -32,6 +32,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
             triggerHeroIntro();
 
+            // nakon fade-outa, makni iz DOM-a
             setTimeout(() => {
                 if (preloader.parentNode) {
                     preloader.parentNode.removeChild(preloader);
@@ -39,17 +40,31 @@ document.addEventListener("DOMContentLoaded", () => {
             }, 800);
         };
 
-        const MIN_DURATION = 300;
+        // Minimalno i maksimalno trajanje – realan UX, ne blokira predugo
+        const MIN_DURATION = 300;  // da ne bljesne
+        const MAX_DURATION = 900;  // max ~0.9s od trenutka ulaska
+
         const startTime = performance.now();
 
         const finishPreloader = () => {
             const elapsed = performance.now() - startTime;
             const remaining = Math.max(MIN_DURATION - elapsed, 0);
-            setTimeout(hidePreloader, remaining);
+
+            setTimeout(() => {
+                hidePreloader();
+            }, remaining);
         };
 
-        window.addEventListener("load", finishPreloader);
-        setTimeout(finishPreloader, 8000);
+        // Ako je sve već učitano u trenutku DOMContentLoaded
+        if (document.readyState === "complete") {
+            finishPreloader();
+        } else {
+            // Normalan slučaj – čekamo load, ali ne beskonačno
+            window.addEventListener("load", finishPreloader, { once: true });
+        }
+
+        // Fallback: i da load kasni, nakon MAX_DURATION svejedno gasimo
+        setTimeout(finishPreloader, MAX_DURATION);
     } else {
         if (!prefersReducedMotion) {
             body.classList.add("decor-animated");

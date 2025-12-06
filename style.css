@@ -14,7 +14,7 @@
     --bg: #f5f5f5;
     --bg-soft: #ffffff;
     --fg: #050505;
-    --muted: #555555;
+    --muted: #4a4a4a; /* malo tamnije radi kontrasta */
     --border: #dedede;
     --accent: #050505;
 
@@ -49,14 +49,9 @@
 /* =========================================================
    2. BASE
    ========================================================= */
-html,
-body {
-    width: 100%;
-    height: 100%;
-}
-
 html {
     scroll-behavior: smooth;
+    scrollbar-gutter: stable both-edges;
 }
 
 body {
@@ -67,7 +62,8 @@ body {
 }
 
 /* kada je mobilni meni otvoren – zabrani scroll */
-body.nav-open {
+body.nav-open,
+body.is-preloading {
     overflow: hidden;
 }
 
@@ -75,16 +71,10 @@ body.nav-open {
     scroll-snap-align: start;
 }
 
-
 /* =========================================================
    PRELOADER / INTRO OVERLAY
    ========================================================= */
 
-body.is-preloading {
-    overflow: hidden;
-}
-
-/* Glavni overlay */
 .preloader {
     position: fixed;
     inset: 0;
@@ -106,10 +96,10 @@ body.is-preloading {
     inset: 0;
     overflow: hidden;
     pointer-events: none;
-    z-index: 1; /* linije + strelice iznad backdropa */
+    z-index: 1;
 }
 
-/* Linije (slične bg-lines, ali samo u okviru preloadera) */
+/* Linije */
 .preloader-lines {
     position: absolute;
     inset: -30%;
@@ -133,7 +123,6 @@ body.is-preloading {
     );
 }
 
-/* Malo drugačiji kut da se ne poklapa 1:1 s glavnom pozadinom */
 .preloader-lines--one {
     transform: rotate(-10deg);
 }
@@ -161,7 +150,7 @@ body.is-preloading {
     filter: blur(0.2px);
 }
 
-/* Pozicije par strelica, random raspored */
+/* Pozicije */
 .preloader-arrows span:nth-child(1) { top: 14%; left: 18%; }
 .preloader-arrows span:nth-child(2) { top: 34%; right: 14%; }
 .preloader-arrows span:nth-child(3) { bottom: 22%; left: 26%; }
@@ -179,13 +168,13 @@ body.is-preloading {
             rgba(235, 235, 235, 0.98) 100%);
     backdrop-filter: blur(14px);
     border-bottom: 1px solid rgba(0, 0, 0, 0.06);
-    z-index: 0; /* najniži sloj unutar preloadera */
+    z-index: 0;
 }
 
 /* Centrirani sadržaj */
 .preloader__content {
     position: relative;
-    z-index: 2; /* kartica u sredini iznad svega */
+    z-index: 2;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -197,7 +186,7 @@ body.is-preloading {
     border: 1px solid rgba(200, 200, 200, 0.95);
 }
 
-/* Mali brand kvadratić (echo topbar brand mark) */
+/* Mali brand kvadratić */
 .preloader__mark {
     width: 52px;
     height: 52px;
@@ -439,43 +428,37 @@ body.is-preloading {
 }
 
 /* Dekor animacije se pale tek kad je body.decor-animated */
-body.decor-animated .preloader-lines--one {
-    animation: bgLinesDrift1 26s linear infinite alternate;
-}
-
-body.decor-animated .preloader-lines--two {
-    animation: bgLinesDrift2 32s linear infinite alternate;
-}
-
-body.decor-animated .preloader-arrows span:nth-child(1) {
-    animation: arrowFloat1 22s ease-in-out infinite;
-}
-body.decor-animated .preloader-arrows span:nth-child(2) {
-    animation: arrowFloat2 26s ease-in-out infinite;
-}
-body.decor-animated .preloader-arrows span:nth-child(3) {
-    animation: arrowFloat3 24s ease-in-out infinite;
-}
-body.decor-animated .preloader-arrows span:nth-child(4) {
-    animation: arrowFloat1 28s ease-in-out infinite;
-}
-body.decor-animated .preloader-arrows span:nth-child(5) {
-    animation: arrowFloat2 30s ease-in-out infinite;
-}
-
+body.decor-animated .preloader-lines--one,
 body.decor-animated .bg-lines__layer--one {
     animation: bgLinesDrift1 26s linear infinite alternate;
 }
 
+body.decor-animated .preloader-lines--two,
 body.decor-animated .bg-lines__layer--two {
     animation: bgLinesDrift2 32s linear infinite alternate;
 }
 
-body.decor-animated .bg-arrows span:nth-child(1)  { animation: arrowFloat1 24s ease-in-out infinite; }
-body.decor-animated .bg-arrows span:nth-child(2)  { animation: arrowFloat2 28s ease-in-out infinite; }
-body.decor-animated .bg-arrows span:nth-child(3)  { animation: arrowFloat3 26s ease-in-out infinite; }
-body.decor-animated .bg-arrows span:nth-child(4)  { animation: arrowFloat1 30s ease-in-out infinite; }
-body.decor-animated .bg-arrows span:nth-child(5)  { animation: arrowFloat2 32s ease-in-out infinite; }
+body.decor-animated .preloader-arrows span:nth-child(1),
+body.decor-animated .bg-arrows span:nth-child(1) {
+    animation: arrowFloat1 22s ease-in-out infinite;
+}
+body.decor-animated .preloader-arrows span:nth-child(2),
+body.decor-animated .bg-arrows span:nth-child(2) {
+    animation: arrowFloat2 26s ease-in-out infinite;
+}
+body.decor-animated .preloader-arrows span:nth-child(3),
+body.decor-animated .bg-arrows span:nth-child(3) {
+    animation: arrowFloat3 24s ease-in-out infinite;
+}
+body.decor-animated .preloader-arrows span:nth-child(4),
+body.decor-animated .bg-arrows span:nth-child(4) {
+    animation: arrowFloat1 28s ease-in-out infinite;
+}
+body.decor-animated .preloader-arrows span:nth-child(5),
+body.decor-animated .bg-arrows span:nth-child(5) {
+    animation: arrowFloat2 30s ease-in-out infinite;
+}
+
 body.decor-animated .bg-arrows span:nth-child(6)  { animation: arrowFloat3 22s ease-in-out infinite; }
 body.decor-animated .bg-arrows span:nth-child(7)  { animation: arrowFloat1 26s ease-in-out infinite; }
 body.decor-animated .bg-arrows span:nth-child(8)  { animation: arrowFloat2 34s ease-in-out infinite; }
@@ -492,6 +475,7 @@ body.decor-animated .bg-arrows span:nth-child(10) { animation: arrowFloat1 31s e
     backdrop-filter: blur(16px);
     background: rgba(245, 245, 245, 0.97);
     border-bottom: 1px solid rgba(220, 220, 220, 0.7);
+    min-height: 64px;
 }
 
 .topbar__inner {
@@ -502,6 +486,7 @@ body.decor-animated .bg-arrows span:nth-child(10) { animation: arrowFloat1 31s e
     align-items: center;
     justify-content: space-between;
     gap: 1.2rem;
+    min-height: 64px;
 }
 
 /* Brand */
@@ -589,7 +574,7 @@ body.decor-animated .bg-arrows span:nth-child(10) { animation: arrowFloat1 31s e
     text-decoration: none;
     text-transform: uppercase;
     letter-spacing: 0.18em;
-    color: #555555; /* jači kontrast */
+    color: #555555;
     padding-bottom: 0.2rem;
     border-bottom: 1px solid transparent;
     transition:
@@ -820,13 +805,7 @@ body.decor-animated .bg-arrows span:nth-child(10) { animation: arrowFloat1 31s e
 }
 
 .js-section {
-    scroll-margin-top: 6rem; /* desktop */
-}
-
-@media (max-width: 640px) {
-    .js-section {
-        scroll-margin-top: 4.5rem; /* manji header na mobitelu */
-    }
+    scroll-margin-top: 6rem;
 }
 
 .hero {
@@ -896,7 +875,7 @@ body.decor-animated .bg-arrows span:nth-child(10) { animation: arrowFloat1 31s e
     font-size: 0.75rem;
     letter-spacing: 0.18em;
     text-transform: uppercase;
-    color: #9a9a9a;
+    color: #3f3f3f;
     margin-bottom: 0.2rem;
 }
 
@@ -1077,7 +1056,7 @@ body.decor-animated .bg-arrows span:nth-child(10) { animation: arrowFloat1 31s e
     font-size: 0.78rem;
     text-transform: uppercase;
     letter-spacing: 0.16em;
-    color: var(--muted);
+    color: #3f3f3f;
     margin-bottom: 0.25rem;
 }
 
@@ -1117,7 +1096,7 @@ body.decor-animated .bg-arrows span:nth-child(10) { animation: arrowFloat1 31s e
     font-size: 0.78rem;
     letter-spacing: 0.22em;
     text-transform: uppercase;
-    color: #444444; /* jači kontrast */
+    color: #444444;
 }
 
 .scroll-hint__line {
@@ -1153,6 +1132,7 @@ body.decor-animated .bg-arrows span:nth-child(10) { animation: arrowFloat1 31s e
     letter-spacing: 0.18em;
     text-transform: uppercase;
     margin-bottom: 0.7rem;
+    color: #3f3f3f;
 }
 
 .about-grid__col p {
@@ -1233,6 +1213,7 @@ body.decor-animated .bg-arrows span:nth-child(10) { animation: arrowFloat1 31s e
     letter-spacing: 0.18em;
     text-transform: uppercase;
     margin-bottom: 1.2rem;
+    color: #3f3f3f;
 }
 
 .timeline__list {
@@ -1278,7 +1259,7 @@ body.decor-animated .bg-arrows span:nth-child(10) { animation: arrowFloat1 31s e
     letter-spacing: 0.16em;
     text-transform: uppercase;
     margin-bottom: 0.1rem;
-    color: #444444; /* malo jače od default muted */
+    color: #3f3f3f;
 }
 
 /* =========================================================
@@ -1346,7 +1327,7 @@ body.decor-animated .bg-arrows span:nth-child(10) { animation: arrowFloat1 31s e
     font-size: 0.75rem;
     letter-spacing: 0.18em;
     text-transform: uppercase;
-    color: #999;
+    color: #3f3f3f;
 }
 
 .featured-pill__value {
@@ -1409,6 +1390,7 @@ body.decor-animated .bg-arrows span:nth-child(10) { animation: arrowFloat1 31s e
     border-radius: var(--radius-pill);
     border: 1px solid rgba(0, 0, 0, 0.7);
     background: #f8f8f8;
+    color: #3f3f3f;
 }
 
 .badge-featured i {
@@ -1419,7 +1401,7 @@ body.decor-animated .bg-arrows span:nth-child(10) { animation: arrowFloat1 31s e
     font-size: 0.8rem;
     letter-spacing: 0.18em;
     text-transform: uppercase;
-    color: var(--muted);
+    color: #3f3f3f;
 }
 
 .featured-card__body {
@@ -1466,7 +1448,7 @@ body.decor-animated .bg-arrows span:nth-child(10) { animation: arrowFloat1 31s e
     font-size: 0.78rem;
     letter-spacing: 0.16em;
     text-transform: uppercase;
-    color: #979797;
+    color: #3f3f3f;
     margin-bottom: 0.15rem;
 }
 
@@ -1587,6 +1569,7 @@ body.decor-animated .bg-arrows span:nth-child(10) { animation: arrowFloat1 31s e
 .project-card__year {
     letter-spacing: 0.16em;
     text-transform: uppercase;
+    color: #3f3f3f;
 }
 
 .project-card h3 {
@@ -1660,6 +1643,7 @@ body.decor-animated .bg-arrows span:nth-child(10) { animation: arrowFloat1 31s e
     letter-spacing: 0.18em;
     text-transform: uppercase;
     margin-bottom: 0.8rem;
+    color: #3f3f3f;
 }
 
 .stack-list {
@@ -1704,7 +1688,7 @@ body.decor-animated .bg-arrows span:nth-child(10) { animation: arrowFloat1 31s e
     text-align: center;
 }
 
-/* Avatar – isti feeling kao hero slika */
+/* Avatar */
 .contact-avatar {
     display: flex;
     justify-content: center;
@@ -1771,7 +1755,7 @@ body.decor-animated .bg-arrows span:nth-child(10) { animation: arrowFloat1 31s e
     align-items: center;
     gap: 1rem;
     font-size: 0.8rem;
-    color: #444444; /* jači kontrast */
+    color: #444444;
 }
 
 .footer__brand,
@@ -1788,7 +1772,7 @@ body.decor-animated .bg-arrows span:nth-child(10) { animation: arrowFloat1 31s e
     gap: 1rem;
 }
 
-/* social ikone – veći tap target + bolji kontrast */
+/* social ikone */
 .footer__social a {
     display: inline-flex;
     align-items: center;
@@ -1889,7 +1873,6 @@ body.decor-animated .bg-arrows span:nth-child(10) { animation: arrowFloat1 31s e
 
 /* Tablet / small desktop */
 @media (max-width: 960px) {
-    /* na tabletima malo veći gap, ali sekcije niže */
     :root {
         --space-section-gap: 5.5rem;
     }
@@ -1992,7 +1975,6 @@ body.decor-animated .bg-arrows span:nth-child(10) { animation: arrowFloat1 31s e
         gap: 1.2rem;
     }
 
-    /* Ukloni scroll-snap za ugodnije skrolanje na manjim ekranima */
     body {
         scroll-snap-type: none;
     }
@@ -2000,7 +1982,6 @@ body.decor-animated .bg-arrows span:nth-child(10) { animation: arrowFloat1 31s e
 
 /* Mobiteli / small phones */
 @media (max-width: 640px) {
-    /* još malo manji razmak između sekcija na mobitelu */
     :root {
         --space-section-gap: 4.5rem;
     }
@@ -2072,7 +2053,7 @@ body.decor-animated .bg-arrows span:nth-child(10) { animation: arrowFloat1 31s e
         gap: 1.4rem;
     }
 
-    /* mobile: makni teški blur za bolje performanse */
+    /* mobile: makni blur i teže animacije radi performansi */
     .topbar {
         backdrop-filter: none;
         background: rgba(245, 245, 245, 0.98);
@@ -2080,18 +2061,6 @@ body.decor-animated .bg-arrows span:nth-child(10) { animation: arrowFloat1 31s e
 
     .preloader__backdrop {
         backdrop-filter: none;
-    }
-}
-
-/* =========================================================
-   17. PREFERS REDUCED MOTION
-   ========================================================= */
-@media (prefers-reduced-motion: reduce) {
-    * {
-        scroll-behavior: auto !important;
-        animation-duration: 0.001ms !important;
-        animation-iteration-count: 1 !important;
-        transition-duration: 0.001ms !important;
     }
 
     .bg-lines__layer--one,
@@ -2101,6 +2070,28 @@ body.decor-animated .bg-arrows span:nth-child(10) { animation: arrowFloat1 31s e
     .preloader-lines--two,
     .preloader-arrows span,
     .featured-arrows span {
-        animation: none !important;
+        animation: none;
+    }
+}
+
+/* =========================================================
+   17. PREFERS REDUCED MOTION
+   ========================================================= */
+@media (prefers-reduced-motion: reduce) {
+    * {
+        scroll-behavior: auto;
+        animation-duration: 0.001ms;
+        animation-iteration-count: 1;
+        transition-duration: 0.001ms;
+    }
+
+    .bg-lines__layer--one,
+    .bg-lines__layer--two,
+    .bg-arrows span,
+    .preloader-lines--one,
+    .preloader-lines--two,
+    .preloader-arrows span,
+    .featured-arrows span {
+        animation: none;
     }
 }
