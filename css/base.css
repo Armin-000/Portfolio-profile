@@ -1,0 +1,159 @@
+/* =========================================================
+   1. RESET & TOKENS
+   ========================================================= */
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+:root {
+    /* Colors */
+    --bg: #f5f5f5;
+    --bg-soft: #ffffff;
+    --fg: #050505;
+    --muted: #4a4a4a; /* malo tamnije radi kontrasta */
+    --border: #dedede;
+    --accent: #050505;
+
+    /* Radius */
+    --radius-lg: 28px;
+    --radius-md: 18px;
+    --radius-pill: 999px;
+
+    /* Elevation */
+    --shadow-soft: 0 24px 70px rgba(0, 0, 0, 0.18);
+
+    /* Typography */
+    --font-sans: "Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    --font-serif: "Playfair Display", "Times New Roman", serif;
+
+    /* Motion */
+    --transition-fast: 0.18s ease-out;
+    --transition-med: 0.4s ease-out;
+
+    /* Layout spacing */
+    --space-page-x: 1.8rem;
+    --space-page-y: 3rem;
+
+    /* Glavni razmak između sekcija na desktopu */
+    --space-section-gap: 5rem;
+
+    /* Unutarnji padding sekcija */
+    --space-section-inner-x: 2.6rem;
+    --space-section-inner-y: 2.6rem;
+}
+
+/* =========================================================
+   2. BASE
+   ========================================================= */
+html {
+    scroll-behavior: smooth;
+    scrollbar-gutter: stable both-edges;
+}
+
+body {
+    background: var(--bg);
+    color: var(--fg);
+    font-family: var(--font-sans);
+    scroll-snap-type: y proximity; /* isključuje se na manjim ekranima */
+}
+
+/* kada je mobilni meni otvoren – zabrani scroll */
+body.nav-open,
+body.is-preloading {
+    overflow: hidden;
+}
+
+.section {
+    scroll-snap-align: start;
+}
+
+/* =========================================================
+   6. LAYOUT: MAIN & SECTIONS
+   ========================================================= */
+.main {
+    max-width: 1120px;
+    margin: 0 auto;
+    padding: var(--space-page-y) var(--space-page-x) 3rem;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-section-gap);
+}
+
+.section {
+    display: flex;
+    align-items: center;
+    position: relative;
+    padding-block: 4rem;
+}
+
+.section__inner {
+    width: 100%;
+    border-radius: var(--radius-lg);
+    padding: var(--space-section-inner-y) var(--space-section-inner-x);
+    background: var(--bg-soft);
+    border: 1px solid rgba(215, 215, 215, 0.9);
+    box-shadow: var(--shadow-soft);
+    position: relative;
+    overflow: hidden;
+}
+
+.section__inner::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: none;
+    opacity: 0;
+    pointer-events: none;
+}
+
+.section__inner::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    border: 1px solid rgba(255, 255, 255, 0.7);
+    mix-blend-mode: soft-light;
+    pointer-events: none;
+}
+
+/* Section headings */
+.eyebrow {
+    font-size: 0.78rem;
+    letter-spacing: 0.28em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 0.7rem;
+}
+
+.section__header h2 {
+    font-family: var(--font-serif);
+    font-size: 2.1rem;
+    letter-spacing: 0.06em;
+    margin-bottom: 0.4rem;
+}
+
+.section__intro {
+    font-size: 0.95rem;
+    color: var(--muted);
+    max-width: 540px;
+}
+
+/* =========================================================
+   14. SCROLL REVEAL
+   ========================================================= */
+.reveal {
+    opacity: 0;
+    transform: translateY(32px) scale(0.98);
+    transition:
+        opacity var(--transition-med),
+        transform var(--transition-med);
+}
+
+.reveal.in-view {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+}

@@ -1,0 +1,440 @@
+/* =========================================================
+   PRELOADER / INTRO OVERLAY
+   ========================================================= */
+
+.preloader {
+    position: fixed;
+    inset: 0;
+    z-index: 999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    pointer-events: auto;
+    opacity: 1;
+    visibility: visible;
+    transition:
+        opacity 0.6s ease,
+        visibility 0.6s ease;
+}
+
+/* Dekor – linije i strelice unutar preloadera */
+.preloader__decor {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+    pointer-events: none;
+    z-index: 1;
+}
+
+/* Linije */
+.preloader-lines {
+    position: absolute;
+    inset: -30%;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    opacity: 0.35;
+}
+
+.preloader-lines span {
+    display: block;
+    width: 170%;
+    height: 1px;
+    background: linear-gradient(
+        to right,
+        transparent 0%,
+        rgba(0, 0, 0, 0.18) 12%,
+        rgba(0, 0, 0, 0.4) 52%,
+        rgba(0, 0, 0, 0.18) 88%,
+        transparent 100%
+    );
+}
+
+.preloader-lines--one {
+    transform: rotate(-10deg);
+}
+
+.preloader-lines--two {
+    transform: rotate(7deg);
+    opacity: 0.25;
+}
+
+/* Strelice unutar preloadera */
+.preloader-arrows {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+}
+
+.preloader-arrows span {
+    position: absolute;
+    width: 16px;
+    height: 16px;
+    border-top: 1px solid rgba(0, 0, 0, 0.28);
+    border-right: 1px solid rgba(0, 0, 0, 0.28);
+    transform: rotate(45deg);
+    opacity: 0.28;
+    filter: blur(0.2px);
+}
+
+/* Pozicije */
+.preloader-arrows span:nth-child(1) { top: 14%; left: 18%; }
+.preloader-arrows span:nth-child(2) { top: 34%; right: 14%; }
+.preloader-arrows span:nth-child(3) { bottom: 22%; left: 26%; }
+.preloader-arrows span:nth-child(4) { bottom: 16%; right: 20%; }
+.preloader-arrows span:nth-child(5) { top: 52%; left: 46%; }
+
+/* Blur / tint preko glavne pozadine */
+.preloader__backdrop {
+    position: absolute;
+    inset: 0;
+    background:
+        radial-gradient(circle at top,
+            rgba(255, 255, 255, 0.95),
+            rgba(245, 245, 245, 0.96) 50%,
+            rgba(235, 235, 235, 0.98) 100%);
+    backdrop-filter: blur(14px);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+    z-index: 0;
+}
+
+/* Centrirani sadržaj */
+.preloader__content {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1.4rem;
+    padding: 2.2rem 2.6rem;
+    border-radius: var(--radius-lg);
+    background: rgba(255, 255, 255, 0.98);
+    box-shadow: 0 26px 70px rgba(0, 0, 0, 0.22);
+    border: 1px solid rgba(200, 200, 200, 0.95);
+}
+
+/* Mali brand kvadratić */
+.preloader__mark {
+    width: 52px;
+    height: 52px;
+    border-radius: 18px;
+    border: 1px solid rgba(0, 0, 0, 0.35);
+    background: radial-gradient(circle at 30% 20%, #ffffff, #e5e5e5 60%, #cfcfcf);
+    box-shadow: 0 16px 34px rgba(0, 0, 0, 0.35);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+}
+
+.preloader__mark::before {
+    content: "";
+    position: absolute;
+    inset: -40%;
+    background: conic-gradient(
+        from 200deg,
+        rgba(0, 0, 0, 0.28),
+        rgba(255, 255, 255, 0.3),
+        rgba(0, 0, 0, 0.2),
+        rgba(255, 255, 255, 0.18)
+    );
+    mix-blend-mode: soft-light;
+    animation: spinBrand 16s linear infinite;
+    opacity: 0.95;
+}
+
+.preloader__initial {
+    position: relative;
+    font-family: var(--font-serif);
+    font-size: 1.6rem;
+    color: var(--accent);
+}
+
+/* Tekst */
+.preloader__text {
+    text-align: center;
+}
+
+.preloader__label {
+    font-size: 0.78rem;
+    letter-spacing: 0.26em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 0.3rem;
+}
+
+.preloader__title {
+    font-family: var(--font-serif);
+    font-size: 1.35rem;
+    letter-spacing: 0.08em;
+}
+
+/* Progress bar */
+.preloader__bar {
+    width: 220px;
+    max-width: 70vw;
+    height: 3px;
+    border-radius: 999px;
+    background: #e1e1e1;
+    overflow: hidden;
+    position: relative;
+}
+
+.preloader__bar-fill {
+    position: absolute;
+    inset: 0;
+    width: 40%;
+    transform: translateX(-60%);
+    background: linear-gradient(
+        to right,
+        #050505,
+        rgba(0, 0, 0, 0.85),
+        #050505
+    );
+    animation: preloaderSlide 1.4s ease-in-out infinite;
+}
+
+/* Mali hint ispod */
+.preloader__hint {
+    font-size: 0.8rem;
+    color: var(--muted);
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+}
+
+/* Kada se sakriva */
+.preloader--hide {
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+}
+
+/* Malo prilagodbe za manje ekrane */
+@media (max-width: 640px) {
+    .preloader__content {
+        padding: 1.8rem 1.7rem;
+        border-radius: 22px;
+    }
+
+    .preloader__title {
+        font-size: 1.2rem;
+    }
+
+    .preloader__bar {
+        width: 190px;
+    }
+}
+
+/* =========================================================
+   3. BACKGROUND DECOR
+   ========================================================= */
+.bg-lines {
+    position: fixed;
+    inset: 0;
+    overflow: hidden;
+    pointer-events: none;
+    z-index: -3;
+}
+
+.bg-lines__layer {
+    position: absolute;
+    inset: -20%;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    opacity: 0.35;
+}
+
+.bg-lines__layer--one span,
+.bg-lines__layer--two span {
+    display: block;
+    width: 160%;
+    height: 1px;
+    background: linear-gradient(
+        to right,
+        transparent 0%,
+        rgba(0, 0, 0, 0.18) 10%,
+        rgba(0, 0, 0, 0.4) 50%,
+        rgba(0, 0, 0, 0.18) 90%,
+        transparent 100%
+    );
+}
+
+.bg-lines__layer--one {
+    transform: rotate(-8deg);
+}
+
+.bg-lines__layer--two {
+    transform: rotate(6deg);
+    opacity: 0.25;
+}
+
+/* Floating arrows */
+.bg-arrows {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: -2;
+}
+
+.bg-arrows span {
+    position: absolute;
+    width: 18px;
+    height: 18px;
+    border-top: 1px solid rgba(0, 0, 0, 0.25);
+    border-right: 1px solid rgba(0, 0, 0, 0.25);
+    transform: rotate(45deg);
+    opacity: 0.3;
+    filter: blur(0.1px);
+}
+
+/* positions */
+.bg-arrows span:nth-child(1)  { top: 10%; left: 14%; }
+.bg-arrows span:nth-child(2)  { top: 30%; left: 75%; }
+.bg-arrows span:nth-child(3)  { top: 65%; left: 18%; }
+.bg-arrows span:nth-child(4)  { top: 78%; left: 60%; }
+.bg-arrows span:nth-child(5)  { top: 50%; left: 45%; }
+.bg-arrows span:nth-child(6)  { top: 18%; left: 55%; }
+.bg-arrows span:nth-child(7)  { top: 40%; left: 8%;  }
+.bg-arrows span:nth-child(8)  { top: 82%; left: 30%; }
+.bg-arrows span:nth-child(9)  { top: 68%; left: 80%; }
+.bg-arrows span:nth-child(10) { top: 22%; left: 88%; }
+
+/* Page glow wrapper */
+.page {
+    position: relative;
+}
+
+.page::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    background: none;
+    opacity: 0;
+    z-index: -1;
+}
+
+/* Dekor animacije se pale tek kad je body.decor-animated */
+body.decor-animated .preloader-lines--one,
+body.decor-animated .bg-lines__layer--one {
+    animation: bgLinesDrift1 26s linear infinite alternate;
+}
+
+body.decor-animated .preloader-lines--two,
+body.decor-animated .bg-lines__layer--two {
+    animation: bgLinesDrift2 32s linear infinite alternate;
+}
+
+body.decor-animated .preloader-arrows span:nth-child(1),
+body.decor-animated .bg-arrows span:nth-child(1) {
+    animation: arrowFloat1 22s ease-in-out infinite;
+}
+body.decor-animated .preloader-arrows span:nth-child(2),
+body.decor-animated .bg-arrows span:nth-child(2) {
+    animation: arrowFloat2 26s ease-in-out infinite;
+}
+body.decor-animated .preloader-arrows span:nth-child(3),
+body.decor-animated .bg-arrows span:nth-child(3) {
+    animation: arrowFloat3 24s ease-in-out infinite;
+}
+body.decor-animated .preloader-arrows span:nth-child(4),
+body.decor-animated .bg-arrows span:nth-child(4) {
+    animation: arrowFloat1 28s ease-in-out infinite;
+}
+body.decor-animated .preloader-arrows span:nth-child(5),
+body.decor-animated .bg-arrows span:nth-child(5) {
+    animation: arrowFloat2 30s ease-in-out infinite;
+}
+
+body.decor-animated .bg-arrows span:nth-child(6)  { animation: arrowFloat3 22s ease-in-out infinite; }
+body.decor-animated .bg-arrows span:nth-child(7)  { animation: arrowFloat1 26s ease-in-out infinite; }
+body.decor-animated .bg-arrows span:nth-child(8)  { animation: arrowFloat2 34s ease-in-out infinite; }
+body.decor-animated .bg-arrows span:nth-child(9)  { animation: arrowFloat3 29s ease-in-out infinite; }
+body.decor-animated .bg-arrows span:nth-child(10) { animation: arrowFloat1 31s ease-in-out infinite; }
+
+/* =========================================================
+   15. ANIMATIONS
+   ========================================================= */
+
+/* preloader bar */
+@keyframes preloaderSlide {
+    0% {
+        transform: translateX(-60%);
+        opacity: 0.1;
+    }
+    35% {
+        opacity: 1;
+    }
+    50% {
+        transform: translateX(20%);
+    }
+    100% {
+        transform: translateX(160%);
+        opacity: 0;
+    }
+}
+
+/* Hero pop-in kada se preloader ugasi */
+.hero-pop-in {
+    animation: heroPopIn 0.7s cubic-bezier(0.22, 0.61, 0.25, 1) forwards;
+}
+
+@keyframes heroPopIn {
+    0% {
+        transform: translateY(18px) scale(0.97);
+        opacity: 0;
+    }
+    60% {
+        transform: translateY(0) scale(1.01);
+        opacity: 1;
+    }
+    100% {
+        transform: translateY(0) scale(1);
+        opacity: 1;
+    }
+}
+
+@keyframes scrollLine {
+    0%   { transform: translateX(0);    opacity: 1; }
+    70%  { transform: translateX(100%); opacity: 0; }
+    100% { transform: translateX(0);    opacity: 0; }
+}
+
+@keyframes spinBrand {
+    from { transform: rotate(0); }
+    to   { transform: rotate(360deg); }
+}
+
+/* background lines drift */
+@keyframes bgLinesDrift1 {
+    0%   { transform: translateX(-6%) translateY(-3%) rotate(-8deg); }
+    50%  { transform: translateX(4%)  translateY(3%)  rotate(-7deg); }
+    100% { transform: translateX(-3%) translateY(-2%) rotate(-9deg); }
+}
+
+@keyframes bgLinesDrift2 {
+    0%   { transform: translateX(6%)  translateY(4%)  rotate(6deg); }
+    50%  { transform: translateX(-4%) translateY(-2%) rotate(7deg); }
+    100% { transform: translateX(3%)  translateY(3%)  rotate(5deg); }
+}
+
+/* floating arrows */
+@keyframes arrowFloat1 {
+    0%   { transform: translate3d(0, 0, 0)        rotate(45deg); opacity: 0.25; }
+    50%  { transform: translate3d(18px, -28px, 0) rotate(45deg); opacity: 0.6;  }
+    100% { transform: translate3d(-10px, 26px, 0) rotate(45deg); opacity: 0.25; }
+}
+
+@keyframes arrowFloat2 {
+    0%   { transform: translate3d(0, 0, 0)        rotate(45deg); opacity: 0.2;  }
+    50%  { transform: translate3d(-24px, -20px, 0)rotate(45deg); opacity: 0.55; }
+    100% { transform: translate3d(16px, 30px, 0)  rotate(45deg); opacity: 0.2;  }
+}
+
+@keyframes arrowFloat3 {
+    0%   { transform: translate3d(0, 0, 0)        rotate(45deg); opacity: 0.3;  }
+    50%  { transform: translate3d(20px, 18px, 0)  rotate(45deg); opacity: 0.65; }
+    100% { transform: translate3d(-18px, -24px, 0)rotate(45deg); opacity: 0.3;  }
+}
