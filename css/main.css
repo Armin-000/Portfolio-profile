@@ -739,6 +739,7 @@ html.lenis, html.lenis body {
   position: relative;
   width: 100%;
   min-width: 360px;
+  padding-top: 8.5rem;
 }
 .mxd-section.padding-blog-default-pre-grid {
   padding-bottom: 3rem;
@@ -1093,9 +1094,6 @@ html.lenis, html.lenis body {
 .mxd-section-inner-headline.padding-headline-pre-stack {
   padding-bottom: 2.3rem;
 }
-.mxd-section-inner-headline.padding-text-pre-block {
-  padding-bottom: 13rem;
-}
 .mxd-section-inner-headline.padding-s-text-pre-block {
   padding-bottom: 4.9rem;
 }
@@ -1116,7 +1114,7 @@ html.lenis, html.lenis body {
     padding-bottom: 1rem;
   }
   .mxd-section-inner-headline.padding-text-pre-block {
-    padding-bottom: 14.8rem;
+    padding-bottom: 32.8rem;
   }
   .mxd-section-inner-headline.padding-s-text-pre-form {
     padding-bottom: 0;
@@ -1157,9 +1155,6 @@ html.lenis, html.lenis body {
   }
   .mxd-section-inner-headline.padding-headline-pre-stack {
     padding-bottom: 4.4rem;
-  }
-  .mxd-section-inner-headline.padding-text-pre-block {
-    padding-bottom: 18.7rem;
   }
   .mxd-section-inner-headline.padding-s-text-pre-form {
     padding-bottom: 3rem;
@@ -6454,18 +6449,15 @@ form textarea:required:valid {
   width: 100%;
   max-width: 1920px;
   margin: 0 auto;
-  padding-bottom: 3rem;
 }
-@media only screen and (min-width: 768px) {
-  .mxd-footer {
-    padding-bottom: 6rem;
-  }
-}
+
 
 .mxd-footer__text-wrap {
   position: relative;
   width: 100%;
+  overflow: hidden; 
 }
+
 
 .mxd-footer__fullwidth-text {
   position: relative;
