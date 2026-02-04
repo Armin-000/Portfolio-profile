@@ -1508,6 +1508,8 @@ gsap.to("[data-speed]", {
 // Parallax Universal End
 // --------------------------------------------- //
 
+
+
 (() => {
   const canvas = document.getElementById('matrix');
   if (!canvas) return;
@@ -1553,6 +1555,26 @@ gsap.to("[data-speed]", {
   let viewW = 0;
   let viewH = 0;
   let dpr = 1;
+
+  let isVisible = true;
+  let isTabActive = true;
+  let scrolling = false;
+  let scrollTimer = 0;
+
+  canvas.addEventListener("wheel", () => {}, { passive: true });
+  canvas.addEventListener("touchstart", () => {}, { passive: true });
+  canvas.addEventListener("touchmove", () => {}, { passive: true });
+
+  window.addEventListener("scroll", () => {
+    scrolling = true;
+    clearTimeout(scrollTimer);
+    scrollTimer = setTimeout(() => (scrolling = false), 140);
+  }, { passive: true });
+
+  document.addEventListener("visibilitychange", () => {
+    isTabActive = !document.hidden;
+    if (isTabActive) lastTime = performance.now();
+  });
 
   function clamp01(x) { return x < 0 ? 0 : (x > 1 ? 1 : x); }
   function smoothstep(t) { return t * t * (3 - 2 * t); }
@@ -1609,6 +1631,9 @@ gsap.to("[data-speed]", {
       WAVE_STRENGTH = DESKTOP_WAVE_STRENGTH * 0.05;
       SPEED_MULT = 0.28;
       BEND_STRENGTH = DESKTOP_BEND_STRENGTH * 1.05;
+
+      TARGET_FPS = 45;
+      STREAMS_MULT = 2.6;
     } else {
       TARGET_BAND_TOP_FRAC = DESKTOP_BAND_TOP;
       START_Y_FRAC = DESKTOP_START_Y;
@@ -1616,6 +1641,9 @@ gsap.to("[data-speed]", {
       WAVE_STRENGTH = DESKTOP_WAVE_STRENGTH;
       SPEED_MULT = DESKTOP_SPEED_MULT;
       BEND_STRENGTH = DESKTOP_BEND_STRENGTH;
+
+      TARGET_FPS = 60;
+      STREAMS_MULT = 3.5;
     }
     resizeCanvas();
   }
@@ -1679,6 +1707,12 @@ gsap.to("[data-speed]", {
   applyResponsive();
   setTimeout(applyResponsive, 50);
   window.addEventListener("resize", applyResponsive);
+
+  const io = new IntersectionObserver((entries) => {
+    isVisible = !!entries[0]?.isIntersecting;
+    if (isVisible) lastTime = performance.now();
+  }, { threshold: 0.02 });
+  io.observe(canvas);
 
   function drawStep(dt) {
     if (!viewW || !viewH) return;
@@ -1758,10 +1792,17 @@ gsap.to("[data-speed]", {
   let acc = 0;
 
   function loop(now) {
+    if (!isTabActive || !isVisible) {
+      requestAnimationFrame(loop);
+      return;
+    }
+
     const elapsed = now - lastTime;
     lastTime = now;
 
-    const fpsClamped = Math.max(15, Math.min(60, TARGET_FPS));
+    const baseFps = Math.max(15, Math.min(60, TARGET_FPS));
+    const fpsClamped = scrolling ? Math.min(24, baseFps) : baseFps;
+
     const frameInterval = 1000 / fpsClamped;
     acc += elapsed;
 

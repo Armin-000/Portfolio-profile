@@ -90,41 +90,52 @@
               <div class="main-menu">
                 <nav class="main-menu__content">
                   <ul id="main-menu" class="main-menu__accordion">
+
                     <li class="main-menu__item">
                       <div class="main-menu__toggle">
-                        <span class="main-menu__link btn btn-anim">
+                        <a class="main-menu__link btn btn-anim" href="index.html">
                           <span class="btn-caption">Portfolio</span>
+                        </a>
+                      </div>
                     </li>
+
                     <li class="main-menu__item">
                       <div class="main-menu__toggle">
-                        <span class="main-menu__link btn btn-anim">
+                        <a class="main-menu__link btn btn-anim" href="skills.html">
                           <span class="btn-caption">My skills</span>
+                        </a>
+                      </div>
+                    </li>
+
                     <li class="main-menu__item">
                       <div class="main-menu__toggle">
                         <span class="main-menu__link btn btn-anim">
                           <span class="btn-caption">My projects</span>
                         </span>
                       </div>
+
                       <ul class="submenu">
                         <li class="submenu__item">
                           <a href="nexora.html">Nexora 2.0</a>
                         </li>
                         <li class="submenu__item">
-                          <a href="about-us.html">3D EcoCube</a>
+                          <a href="ecocube.html">3D EcoCube</a>
                         </li>
                         <li class="submenu__item">
-                          <a href="services.html">3d Engine</a>
+                          <a href="engine.html">3D Engine</a>
                         </li>
                         <li class="submenu__item">
-                          <a href="services.html">Matrix code wave</a>
+                          <a href="matrix.html">Matrix code wave</a>
                         </li>
                       </ul>
                     </li>
+
                     <li class="main-menu__item">
                       <a class="main-menu__link btn btn-anim" href="contact.html">
                         <span class="btn-caption">Contact</span>
                       </a>
                     </li>
+                    
                   </ul>
                 </nav>
               </div>
@@ -320,7 +331,9 @@
               <!-- Featured Post Start -->
               <article class="mxd-post post-featured radius-m">
                 <a class="post-featured__thumb" href="nexora.html">
-                  <img src="img/backgrounds/Nexora3.png" alt="Featured Post Thumb">
+                  <video autoplay muted loop playsinline preload="metadata">
+                    <source src="video/nexora.mp4" type="video/mp4">
+                  </video>
                 </a>
                 <div class="post-featured__categories">
                   <span class="tag tag-default tag-outline-permanent tag-link-outline-premanent">
@@ -352,23 +365,31 @@
 
               <!-- Regular Posts Group Start -->
               <!-- simple post -->
+              <!-- simple post -->
               <article class="mxd-post post-simple">
-                <a class="post-simple__thumb radius-m" href="blog-article.html">
-                  <img src="img/backgrounds/EcoCube.png" alt="Post Simple Thumb">
+                <a class="post-simple__thumb radius-m" href="ecocube.html">
+
+                  <video autoplay muted loop playsinline preload="metadata">
+                    <source src="img/video/EcoCube.mp4" type="video/mp4">
+                  </video>
+
                   <div class="mxd-preview-hover">
                     <i class="mxd-preview-hover__icon icon-small">
                       <img src="img/icons/icon-eye.svg" alt="Eye Icon">
                     </i>
                   </div>
+
                 </a>
+
                 <div class="post-simple__content">
                   <div class="post-simple__descr">
                     <div class="post-simple__meta">
                       <span class="meta-date">February 22, 2026</span>
                     </div>
+
                     <div class="post-simple__title">
                       <h5>
-                        <a href="blog-article.html">3D EcoCube Viewer</a>
+                        <a href="ecocube.html">3D EcoCube Viewer</a>
                       </h5>
                     </div>
 
@@ -378,8 +399,9 @@
                       This is one of my favorite projects because it pushed my frontend and 3D skills forward while allowing me to create a clean, immersive user experience.
                     </p>
                   </div>
+
                   <div class="post-simple__btn">
-                    <a class="btn btn-anim btn-default btn-outline slide-right-up" href="blog-article.html">
+                    <a class="btn btn-anim btn-default btn-outline slide-right-up" href="ecocube.html">
                       <span class="btn-caption">Read More</span>
                       <i class="ph ph-arrow-up-right"></i>
                     </a>
@@ -388,72 +410,92 @@
               </article>
               <!-- simple post -->
               <article class="mxd-post post-simple">
-                <a class="post-simple__thumb radius-m" href="blog-article.html">
-                  <img src="img/backgrounds/Engine.png" alt="Post Simple Thumb">
+                <a class="post-simple__thumb radius-m" href="engine.html">
+
+                  <video autoplay muted loop playsinline preload="metadata">
+                    <source src="img/video/Engine.mp4" type="video/mp4">
+                  </video>
+
                   <div class="mxd-preview-hover">
                     <i class="mxd-preview-hover__icon icon-small">
                       <img src="img/icons/icon-eye.svg" alt="Eye Icon">
                     </i>
                   </div>
+
                 </a>
+
                 <div class="post-simple__content">
                   <div class="post-simple__descr">
                     <div class="post-simple__meta">
                       <span class="meta-date">January 09, 2025</span>
                     </div>
+
                     <div class="post-simple__title">
                       <h5>
-                        <a href="blog-article.html">3D Engine viewer</a>
+                        <a href="engine.html">3D Engine Viewer</a>
                       </h5>
                     </div>
+
                     <p>
                       This 3D Model Engine project showcases a custom interactive viewer built to explore detailed engine assets directly in the browser.
                       It was created using HTML, CSS, JavaScript, Three.js, and GSAP, with a focus on smooth navigation, lighting effects, and responsive interaction.
                       This project is one of my favorites because it allowed me to refine advanced 3D scene control and animation techniques while delivering an engaging user experience.
                     </p>
                   </div>
+
                   <div class="post-simple__btn">
-                    <a class="btn btn-anim btn-default btn-outline slide-right-up" href="blog-article.html">
+                    <a class="btn btn-anim btn-default btn-outline slide-right-up" href="engine.html">
                       <span class="btn-caption">Read More</span>
                       <i class="ph ph-arrow-up-right"></i>
                     </a>
                   </div>
                 </div>
               </article>
+
               <!-- simple post -->
               <article class="mxd-post post-simple">
-                <a class="post-simple__thumb radius-m" href="blog-article.html">
-                  <img src="img/backgrounds/Wave.png" alt="Post Simple Thumb">
+                <a class="post-simple__thumb radius-m" href="matrix.html">
+
+                  <video autoplay muted loop playsinline preload="metadata">
+                    <source src="img/video/matrix.mp4" type="video/mp4">
+                  </video>
+
                   <div class="mxd-preview-hover">
                     <i class="mxd-preview-hover__icon icon-small">
                       <img src="img/icons/icon-eye.svg" alt="Eye Icon">
                     </i>
                   </div>
+
                 </a>
+
                 <div class="post-simple__content">
                   <div class="post-simple__descr">
                     <div class="post-simple__meta">
                       <span class="meta-date">January 04, 2025</span>
                     </div>
+
                     <div class="post-simple__title">
                       <h5>
-                        <a href="blog-article.html">Matrix code wave</a>
+                        <a href="matrix.html">Matrix code wave</a>
                       </h5>
                     </div>
+
                     <p>
                       Matrix-code wave is a creative web animation project inspired by the classic digital rain effect, built using HTML, CSS, and JavaScript.
                       The project combines custom animation logic with responsive design to deliver a visually engaging and fluid experience.
                       I enjoy this project because it allowed me to experiment with animation timing, effects, and performance while creating a dynamic visual piece.
                     </p>
                   </div>
+
                   <div class="post-simple__btn">
-                    <a class="btn btn-anim btn-default btn-outline slide-right-up" href="blog-article.html">
+                    <a class="btn btn-anim btn-default btn-outline slide-right-up" href="matrix.html">
                       <span class="btn-caption">Read More</span>
                       <i class="ph ph-arrow-up-right"></i>
                     </a>
                   </div>
                 </div>
               </article>
+
               <!-- simple post -->
               <article class="mxd-post post-simple">
                 <a class="post-simple__thumb radius-m" href="blog-article.html">
@@ -750,12 +792,12 @@
                   </a>
                 </li>
                 <li class="footer-nav__item anim-uni-in-up">
-                  <a href="about-us.html" class="footer-nav__link btn-anim">
+                  <a href="skills.html" class="footer-nav__link btn-anim">
                     <span class="btn-caption">My skills</span>
                   </a>
                 </li>
                 <li class="footer-nav__item anim-uni-in-up">
-                  <a href="works-simple.html" class="footer-nav__link btn-anim">
+                  <a href="projects.html" class="footer-nav__link btn-anim">
                     <span class="btn-caption">My projects</span>
                   </a>
                 </li>
