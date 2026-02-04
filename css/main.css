@@ -112,7 +112,7 @@
   /* light color scheme */
   --base--light: #FAF7F6;
   --base-rgb--light: 250, 247, 246;
-  --base-tint--light: #FFFFFF;
+  --base-tint--light: #dfdfdf;
   --base-shade--light: #e0dddb;
   --base-opp--light: #161616;
   --base-opp-tint--light: #1C1C1C;
@@ -5790,14 +5790,9 @@ form textarea:required:valid {
             flex-direction: row;
     overflow: hidden;
     padding-top: 0;
-    padding-bottom: 9.7rem;
   }
 }
-@media only screen and (min-width: 1600px) {
-  .mxd-menu__inner {
-    padding-bottom: 13.7rem;
-  }
-}
+
 
 .mxd-menu__left {
   width: 100%;
@@ -5893,24 +5888,12 @@ form textarea:required:valid {
 }
 @media only screen and (min-width: 1200px) {
   .mxd-menu__data {
-    position: absolute;
-    bottom: 4rem;
-    left: 0;
-    -webkit-box-orient: horizontal;
-    -webkit-box-direction: normal;
-       -moz-box-orient: horizontal;
-       -moz-box-direction: normal;
-        -ms-flex-direction: row;
-            flex-direction: row;
-    -webkit-box-pack: justify;
-       -moz-box-pack: justify;
-        -ms-flex-pack: justify;
-            justify-content: space-between;
-    width: 100%;
-    padding: 0 4rem;
-    margin-top: 0;
+    position: relative;
+    bottom: auto;
+    left: auto;
   }
 }
+
 @media only screen and (min-width: 1600px) {
   .mxd-menu__data {
     bottom: 6rem;
@@ -12252,13 +12235,11 @@ form textarea:required:valid {
   transition: filter var(--_animspeed-medium), transform var(--_animspeed-medium) var(--_animbezier), -webkit-filter var(--_animspeed-medium), -webkit-transform var(--_animspeed-medium) var(--_animbezier), -moz-transform var(--_animspeed-medium) var(--_animbezier);
 }
 .no-touch .recent-post__thumb:hover img {
-  -webkit-filter: blur(3px);
-          filter: blur(3px);
-  -webkit-transform: scale(1.04);
-     -moz-transform: scale(1.04);
-      -ms-transform: scale(1.04);
-          transform: scale(1.04);
+  -webkit-filter: none;
+          filter: none;
+  transform: none;
 }
+
 
 .recent-post__content {
   display: -webkit-box;
@@ -21091,3 +21072,36 @@ html[color-scheme="dark"] .mxd-logo__image {
 
 
 
+.footer-github-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.footer-github-list li {
+  margin-bottom: 10px;
+}
+
+.footer-github-list a {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: inherit;
+  text-decoration: none;
+  opacity: 0.8;
+  transition: all .3s ease;
+}
+
+.footer-github-list a:hover {
+  opacity: 1;
+  transform: translateX(6px);
+}
+
+.mxd-menu__inner {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+.mxd-menu__data {
+  margin-top: auto;
+}
