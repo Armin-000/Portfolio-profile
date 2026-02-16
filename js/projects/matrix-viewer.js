@@ -1,8 +1,4 @@
 document.addEventListener('DOMContentLoaded', () => {
-  /* =======================================================================
-    MATRIX CANVAS (CLS-safe + DPR) + UI SLIDERI + THEME DETECTION
-    ======================================================================= */
-
   const canvas = document.getElementById('matrix');
   if (!canvas) {
     initHeaderTyping();
@@ -20,7 +16,6 @@ document.addEventListener('DOMContentLoaded', () => {
     applyHeroTypedTheme();
     return;
   }
-
 
   let dynamicFontSize = 16;
   let rows = 0, h_drops = [], yStartOffset = 0;
@@ -59,9 +54,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function clamp01(x){ return x < 0 ? 0 : (x > 1 ? 1 : x); }
 
-  /* =======================================================================
-    LIGHT/DARK DETEKCIJA
-    ======================================================================= */
   let __lastThemeCheck = 0;
   let __cachedLightMode = false;
 
@@ -117,9 +109,6 @@ document.addEventListener('DOMContentLoaded', () => {
     return __cachedLightMode;
   }
 
-  /* =======================================================================
-    HERO TYPED THEME (isti scope -> nema undefined)
-    ======================================================================= */
   const typedEl      = document.getElementById('typed');
   const subtitleWrap = document.querySelector('.hero-01-subtitle');
   const cursorEl     = document.querySelector('.typed-cursor');
@@ -144,9 +133,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  /* =======================================================================
-    SLIDERI (ako postoje)
-    ======================================================================= */
   const $startY  = document.getElementById('strength');
   const $cycles  = document.getElementById('cycles');
   const $bend    = document.getElementById('bend');
@@ -215,9 +201,6 @@ document.addEventListener('DOMContentLoaded', () => {
   $scatterStart?.addEventListener('input', e => setScatterStart(e.target.value));
   $scatterAmt  ?.addEventListener('input', e => setScatterAmt(e.target.value));
 
-  /* =======================================================================
-    PRESETS
-    ======================================================================= */
   const PRESETS = {
     mobile: {
       START_Y_FRAC:   0.35,
@@ -286,9 +269,6 @@ document.addEventListener('DOMContentLoaded', () => {
   let currentPreset = getPresetByViewport();
   applyPreset(currentPreset);
 
-  /* =======================================================================
-    poll UI (paranoja)
-    ======================================================================= */
   let __prevDensity = DENSITY;
   let __prevStreams = STREAMS_MULT;
   let __prevStartY  = START_Y_FRAC;
@@ -316,9 +296,6 @@ document.addEventListener('DOMContentLoaded', () => {
     if ($scatterAmt){ const v = +$scatterAmt.value; if (!Number.isNaN(v)) setScatterAmt(v); }
   }
 
-  /* =======================================================================
-    effective speed
-    ======================================================================= */
   const MIN_BOOST = 0.25;
   const MAX_BOOST = 10.0;
 
@@ -330,9 +307,6 @@ document.addEventListener('DOMContentLoaded', () => {
     return eff;
   }
 
-  /* =======================================================================
-    wave / bends
-    ======================================================================= */
   const BENDS = [
     { p: 0.35, yFrac: 0.64, strength: 0.80, radius: 0.30 },
     { p: 0.70, yFrac: 0.38, strength: 0.70, radius: 0.34 },
@@ -364,9 +338,6 @@ document.addEventListener('DOMContentLoaded', () => {
     return y;
   }
 
-  /* =======================================================================
-    CLS-safe resize: CSS size (rect) + DPR buffer
-    ======================================================================= */
   function resizeCanvas() {
     const rect = canvas.getBoundingClientRect();
     const w = Math.max(1, rect.width);
@@ -380,7 +351,6 @@ document.addEventListener('DOMContentLoaded', () => {
     canvas.width  = Math.max(1, Math.round(w * dpr));
     canvas.height = Math.max(1, Math.round(h * dpr));
 
-    // crtamo u CSS koordinatama
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
     const baseFont = Math.max(12, Math.floor(w / 120));
@@ -435,17 +405,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
   window.addEventListener('resize', handleResize);
 
-  // Jedan ResizeObserver (dosta)
   const ro = new ResizeObserver(() => resizeCanvas());
   ro.observe(canvas);
 
-  /* =======================================================================
-    draw
-    ======================================================================= */
   const chars = "01010101010101010101010101010101010101010101010101010101";
 
   function drawStep(dt){
-    // typed boje sinkaj svaku sličicu (lagano, ali sigurno)
     applyHeroTypedTheme();
 
     const lightMode = isLightMode();
@@ -517,13 +482,43 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  /* =======================================================================
-    FPS cap
-    ======================================================================= */
   let lastTime = performance.now();
   let acc = 0;
 
+  const __matrixState = {
+    inView: true,
+    tabVisible: true,
+    running: false,
+    raf: 0
+  };
+
+  function __shouldRunMatrix(){
+    return __matrixState.inView && __matrixState.tabVisible;
+  }
+
+  function __startMatrix(){
+    if (__matrixState.running) return;
+    __matrixState.running = true;
+    lastTime = performance.now();
+    acc = 0;
+    __matrixState.raf = requestAnimationFrame(loop);
+  }
+
+  function __stopMatrix(){
+    if (!__matrixState.running) return;
+    __matrixState.running = false;
+    if (__matrixState.raf) cancelAnimationFrame(__matrixState.raf);
+    __matrixState.raf = 0;
+  }
+
+  function __updateMatrixRunState(){
+    if (__shouldRunMatrix()) __startMatrix();
+    else __stopMatrix();
+  }
+
   function loop(now){
+    if (!__matrixState.running) return;
+
     const elapsed = now - lastTime;
     lastTime = now;
 
@@ -537,12 +532,26 @@ document.addEventListener('DOMContentLoaded', () => {
       acc -= frameInterval;
     }
 
-    requestAnimationFrame(loop);
+    __matrixState.raf = requestAnimationFrame(loop);
   }
 
-  /* =======================================================================
-    toggle Wave Controls
-    ======================================================================= */
+  (function __initMatrixPause(){
+    const io = new IntersectionObserver((entries) => {
+      const e = entries[0];
+      __matrixState.inView = !!e && e.isIntersecting && e.intersectionRatio >= 0.10;
+      __updateMatrixRunState();
+    }, { threshold: [0, 0.10, 0.25, 0.5, 0.75, 1] });
+
+    io.observe(canvas);
+
+    document.addEventListener('visibilitychange', () => {
+      __matrixState.tabVisible = !document.hidden;
+      __updateMatrixRunState();
+    });
+
+    window.addEventListener('pagehide', __stopMatrix);
+  })();
+
   (function initWavePanelToggle(){
     if (window.__awWavePanelInit) return;
     window.__awWavePanelInit = true;
@@ -582,9 +591,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   })();
 
-  /* =======================================================================
-    START
-    ======================================================================= */
   initHeaderTyping();
   initHeroTyped();
   bindThemeSwitcher();
@@ -592,12 +598,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
   resizeCanvas();
   canvas.classList.add('matrix-visible');
-  requestAnimationFrame(loop);
+  __updateMatrixRunState();
 
-
-  /* =======================================================================
-    HEADER TYPING LOOP (ispod loga)
-    ======================================================================= */
   function initHeaderTyping(){
     const subtitles = [
       "where intelligence meets innovation",
@@ -666,9 +668,6 @@ document.addEventListener('DOMContentLoaded', () => {
     cycleText();
   }
 
-  /* =======================================================================
-    Typed.js init (hero)
-    ======================================================================= */
   function initHeroTyped(){
     const host = document.getElementById('typed');
     if (!host) return;
@@ -676,7 +675,6 @@ document.addEventListener('DOMContentLoaded', () => {
     host.__awTypedInit = true;
 
     function initTypedNow() {
-      // eslint-disable-next-line no-undef
       new Typed('#typed', {
         stringsElement: '#typed-strings',
         showCursor: true,
@@ -690,4 +688,3 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 });
-
