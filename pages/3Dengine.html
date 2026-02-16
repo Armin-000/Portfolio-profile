@@ -1,0 +1,705 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr" color-scheme="dark">
+
+    <head>
+    <meta charset="UTF-8">
+
+    <!-- Page Title -->
+    <title>3D Engine Viewer — Interactive WebGL Experience | Armin Lisic</title>
+
+    <!-- Meta Tags -->
+    <meta name="description" content="Interactive 3D Engine Viewer built with Three.js and WebGL. Explore detailed mechanical components in real time with HDR environment lighting, smooth camera controls and optimized rendering performance.">
+    <meta name="keywords" content="3D Engine Viewer, WebGL, Three.js, GLTF, GLB, HDR Lighting, Real-time Rendering, Interactive 3D, Mechanical Visualization, JavaScript 3D">
+    <meta name="author" content="Armin Lisic">
+
+    <!-- Viewport -->
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <!-- Theme / Appearance -->
+    <meta name="color-scheme" content="dark">
+    <meta name="theme-color" content="#0f0f0f">
+    <meta name="msapplication-navbutton-color" content="#0f0f0f">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+
+    <!-- Favicon & Icons -->
+    <link rel="icon" href="/assets/img/favicon/favicon.ico" sizes="any">
+    <link rel="icon" href="/assets/img/favicon/icon.svg" type="image/svg+xml">
+    <link rel="apple-touch-icon" href="/assets/img/favicon/apple-touch-icon.png">
+    <link rel="manifest" href="/assets/img/favicon/manifest.webmanifest">
+
+    <!-- Open Graph -->
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="3D Engine Viewer — Interactive WebGL Experience">
+    <meta property="og:description" content="Real-time WebGL 3D engine visualization built with Three.js. Featuring HDR environment lighting, responsive controls and cinematic presentation.">
+    <meta property="og:url" content="https://armin-lisic-portfolio.netlify.app/engine.html">
+    <meta property="og:image" content="/assets/img/og-images/3d-model-engine-viewer.jpg">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="3D Engine Viewer — Interactive WebGL Experience">
+    <meta name="twitter:description" content="Interactive Three.js-based 3D engine viewer with HDR lighting and smooth camera controls.">
+    <meta name="twitter:image" content="/assets/img/og-images/3d-model-engine-viewer.jpg">
+
+    <!-- Styles -->
+    <link rel="stylesheet" href="/css/loaders/loader.css">
+    <link rel="stylesheet" href="/css/plugins.css">
+    <link rel="stylesheet" href="/css/main.css">
+
+    <!-- Three.js Import Map -->
+    <script type="importmap">
+    {
+        "imports": {
+        "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+        "three/examples/jsm/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+        }
+    }
+    </script>
+
+    </head>
+
+  <body>
+
+    <!-- Loader Start -->
+    <div id="loader" class="loader">
+      <div class="loader__wrapper">
+        <div class="loader__content">
+          <div class="loader__count">
+            <span class="count__text">0</span>
+            <span class="count__percent">%</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- Loader End -->
+
+    <!-- Menu & Menu Hamburger Start -->
+    <nav class="mxd-nav__wrap" data-lenis-prevent="">
+
+      <!-- Hamburger Start -->
+      <div class="mxd-nav__contain loading__fade">
+        <a href="#0" class="mxd-nav__hamburger">
+          <!-- flip element -->
+          <div class="hamburger__base"></div>
+          <div class="hamburger__line"></div>
+          <div class="hamburger__line"></div>
+        </a>
+      </div>
+      <!-- Hamburger End -->
+
+      <!-- Main Navigation Start -->
+      <div class="mxd-menu__wrapper">
+        <!-- background active layer -->
+        <div class="mxd-menu__base"></div>
+        <!-- menu container -->
+        <div class="mxd-menu__contain">
+          <div class="mxd-menu__inner">
+            <!-- left side -->
+            <div class="mxd-menu__left">
+              <p class="mxd-menu__caption menu-fade-in">Armin Lisic<br>Full stack and UI development</p>
+              <div class="main-menu">
+                <nav class="main-menu__content">
+                  <ul id="main-menu" class="main-menu__accordion">
+
+                    <li class="main-menu__item">
+                      <div class="main-menu__toggle">
+                        <a class="main-menu__link btn btn-anim" href="/index.html">
+                          <span class="btn-caption">Portfolio</span>
+                        </a>
+                      </div>
+                    </li>
+
+                    <li class="main-menu__item">
+                      <div class="main-menu__toggle">
+                        <a class="main-menu__link btn btn-anim" href="/pages/myskills.html">
+                          <span class="btn-caption">My skills</span>
+                        </a>
+                      </div>
+                    </li>
+
+                    <li class="main-menu__item">
+                      <div class="main-menu__toggle">
+                        <span class="main-menu__link btn btn-anim">
+                          <span class="btn-caption">My projects</span>
+                        </span>
+                      </div>
+
+                      <ul class="submenu">
+                        <li class="submenu__item">
+                          <a href="/pages/nexora.html">Nexora 2.0</a>
+                        </li>
+                        <li class="submenu__item">
+                          <a href="/pages/ecocube.html">3D EcoCube</a>
+                        </li>
+                        <li class="submenu__item">
+                          <a href="/pages/engine.html">3D Engine</a>
+                        </li>
+                        <li class="submenu__item">
+                          <a href="/pages/matrix.html">Matrix code wave</a>
+                        </li>
+                      </ul>
+                    </li>
+
+                    <li class="main-menu__item">
+                      <a class="main-menu__link btn btn-anim" href="/pages/contact.html">
+                        <span class="btn-caption">Contact</span>
+                      </a>
+                    </li>
+                    
+                  </ul>
+                </nav>
+              </div>
+            </div>
+            <!-- 
+            <div class="mxd-menu__right">
+              <div class="menu-promo">
+                <div class="menu-promo__content">
+                  <p class="menu-promo__caption menu-fade-in">Nice to see you!<br>I'm Armin Lisic, digital 
+                    designer and illustrator based in Odesa, Rijeka</p>
+                  <div class="menu-promo__video">
+                    <video class="menu-video" id="inner-video" preload="auto" autoplay="autoplay" loop="loop" muted="muted" poster="https://dummyimage.com/540x310/5d5d5d/737373">
+                      <source type="video/mp4" src="video/540x310_video.mp4">
+                      <source type="video/webm" src="video/540x310_video.webm">
+                      <source type="video/ogv" src="video/540x310_video.ogv">
+                    </video>
+                  </div>
+                </div>
+              </div>
+            </div>
+            -->
+            <!-- data bottom line -->
+            <div class="mxd-menu__data menu-fade-in">
+              <p class="t-xsmall">
+                <i class="ph ph-copyright"></i>
+                2026
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- Main Navigation End -->
+
+    </nav>
+    <!-- Menu & Menu Hamburger End -->
+
+    <!-- Header Start -->
+    <header id="header" class="mxd-header">
+      <!-- header logo -->
+      <div class="mxd-header__logo loading__fade">
+        <a href="/index.html" class="mxd-logo">
+          <!-- logo icon -->
+          <!-- logo icon -->
+          <svg class="mxd-logo__image"
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 200 200"
+              xml:space="preserve">
+
+            <style>
+              .mxd-logo__bg { fill: var(--base-opp); }
+              .mxd-logo__cat {
+                fill: none;
+                stroke: currentColor;
+                stroke-width: 8;
+                stroke-linecap: round;
+                stroke-linejoin: round;
+                stroke-miterlimit: 6;
+              }
+            </style>
+
+            <!-- background shape -->
+            <path class="mxd-logo__bg"
+                  d="M180,90c0,35.7-9.3,90-90,90S0,125.7,0,90S9.3,0,90,0s90,54.3,90,90z"/>
+
+            <!-- logo artwork -->
+            <g class="mxd-logo__cat">
+
+              <path d="M135.635 172s-3.54-19.069-10.433-33.824c0 0-3.685.51-6.448 6.785
+                      0 0 4.89 9.717 5.892 27.039"/>
+
+              <path d="m82.947 141.442 17.286 18.563 25.427-23.138-8.398-9.746
+                      s-11.05 9.373-29.423 8.374z
+                      M90.539 172s1.466-19.128-2.094-24.417"/>
+
+              <path d="M118.766 125.752s6.19-10.185 0-48.303
+                      c0 0-13.347-10.485-67.276-5.145
+                      v35.317s1.033 27.99 18.567 27.99H87.89"/>
+
+              <path d="M122.889 121.11s18.651 6.546 24.288-29.677
+                      c0 0 1.3-8.92-10.72-7.138
+                      0 0-7.136 6.387-14.786 21.27
+                      m20.405-22.302s6.262-20.166-21.006-44.83
+                      l4.308-12.984-32.895 3.723L80.916 20
+                      l-7.647 16.173-14.254-12.74-9.735 23.935
+                      -14.647-3.38 16.53 29.52"/>
+
+              <circle cx="68.956" cy="95.401" r="8.878"/>
+
+              <path d="m71.909 97.272.783.659
+                      m32.208-1.287 2.087 1.853
+                      M61.67 113.01l28.892 3.21
+                      s-7.86 8.853-17.104 7.98
+                      c-9.243-.871-11.788-11.19-11.788-11.19z"/>
+
+            </g>
+          </svg>
+
+          <!-- logo text -->
+          <span class="mxd-logo__text">
+            3D Viewer<br>
+          </span>
+        </a>
+      </div>
+      <!-- header controls -->
+      <div class="mxd-header__controls loading__fade">
+        <button id="color-switcher" class="mxd-color-switcher" type="button" role="switch" aria-label="light/dark mode" aria-checked="true"></button>
+        <a class="btn btn-anim btn-default btn-mobile-icon btn-outline slide-right-up" href="/pages/contact.html">
+          <span class="btn-caption">Contact me</span>
+          <i class="ph-bold ph-arrow-up-right"></i>
+        </a>
+      </div>
+    </header>
+    <!-- Header End -->
+<!-- Page Content Start -->
+<main id="mxd-page-content" class="mxd-page-content inner-page-content">
+
+<!-- Section - Inner Page Headline Start -->
+<div class="mxd-section mxd-section-inner-headline padding-text-pre-block">
+  <canvas id="canvas"></canvas>
+  <div class="mxd-container grid-container">
+
+    <div class="mxd-block loading-wrap">
+      <div class="container-fluid px-0">
+        <div class="row gx-0">
+
+          <div class="col-12 col-xl-2 mxd-grid-item no-margin">
+            <div class="mxd-block__name name-inner-headline loading__item">
+              <p class="mxd-point-subtitle">
+              </p>
+            </div>
+          </div>
+
+          <div class="col-12 col-xl-8 mxd-grid-item no-margin">
+
+            <div class="mxd-block__content">
+              <div class="mxd-block__inner-headline">
+
+                <h1 class="inner-headline__title animated-type loading__item">
+                  <span id="typed-strings">
+                    <b>3D Engine</b>
+                    <b>Viewer</b>
+                    <b>WebGL</b>
+                  </span>
+                  <span id="typed"></span>
+                </h1>
+
+                <p class="inner-headline__text t-large t-bright loading__item">
+                  The 3D Engine Viewer is a real-time WebGL visualization built with Three.js,
+                  delivering smooth camera interaction, HDR environment lighting and physically
+                  accurate materials. Designed for performance and clarity, it allows users to
+                  explore detailed mechanical components from every angle through responsive
+                  controls and a cinematic presentation workflow.
+                </p>
+
+              </div>
+            </div>
+
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+<!-- Section - Inner Page Headline End -->
+
+  
+<section class="mxd-section mxd-engine-viewer-section">
+  <div class="mxd-container grid-container">
+    <div class="mxd-block">
+      <div class="engine-viewer__wrap loading__fade">
+
+        <div class="engine-ui">
+          <div class="engine-ui__title">
+            <h3>3D Engine</h3>
+            <p class="t-xsmall t-muted">
+              Rotate, zoom and inspect the engine in real time with cinematic HDR lighting.
+            </p>
+          </div>
+
+          <div class="engine-ui__description">
+            <p>
+              This detailed 3D engine model showcases internal mechanical components
+              with realistic materials, lighting and real-time interaction built in WebGL.
+            </p>
+          </div>
+
+          <label class="engine-ui__toggle">
+            <input id="autoRotate" type="checkbox" checked>
+            <span><i class="ph ph-arrow-clockwise"></i> Auto rotate (360°)</span>
+          </label>
+
+          <div class="engine-ui__btns engine-reset-desktop">
+            <button id="resetExplode" class="btn btn-anim btn-default btn-outline slide-right-up" type="button">
+              <span class="btn-caption">Reset</span>
+              <i class="ph-bold ph-arrow-counter-clockwise"></i>
+            </button>
+          </div>
+        </div>
+
+        <div class="engine-stage">
+          <div id="engineStage" class="engine-stage__canvas"></div>
+          <div class="engine-stage__hint">
+            <span><i class="ph ph-mouse"></i> Rotate</span>
+            <span><i class="ph ph-mouse-simple"></i> Zoom</span>
+          </div>
+        </div>
+
+        <div class="engine-reset-mobile">
+          <button class="btn btn-anim btn-default btn-outline slide-right-up" type="button" data-reset-engine>
+            <span class="btn-caption">Reset</span>
+            <i class="ph-bold ph-arrow-counter-clockwise"></i>
+          </button>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</section>
+
+
+
+            <!-- Section - Inner Page Headline Start -->
+      <div class="mxd-section mxd-section-inner-form padding-default">
+        <div class="mxd-container grid-container">
+        
+          <!-- Block - Inner Page Headline Start -->
+          <div class="mxd-block">
+            <div class="container-fluid px-0">
+              <div class="row gx-0">
+
+                <!-- Inner Headline Name Start -->
+                <div class="col-12 col-xl-2 mxd-grid-item no-margin"></div>
+                <!-- Inner Headline Name Start -->
+
+                <!-- Inner Headline Content Start -->
+                <div class="col-12 col-xl-8 mxd-grid-item no-margin">
+
+                  <div class="mxd-block__content">
+                    <div class="mxd-accordion loading__fade">
+
+                      <!-- accordion single item -->
+                      <div class="mxd-accordion__item">
+                        <div class="mxd-accordion__divider anim-uni-in-up"></div>
+                        <div class="mxd-accordion__title anim-uni-in-up">
+                          <h6>Which technologies power the 3D Engine Viewer?</h6>
+                          <div class="mxd-accordion__arrow">
+                            <i class="ph ph-plus"></i>
+                          </div>
+                        </div>
+                        <div class="mxd-accordion__content">
+                          <p class="mxd-accordion__text">
+                            The project is built with Three.js (WebGL), using GLTFLoader for model integration 
+                            and RGBELoader for HDR environment lighting. It is structured with ES Modules 
+                            and optimized for modern browsers.
+                          </p>
+                        </div>
+                        <div class="mxd-accordion__divider anim-uni-in-up"></div>
+                      </div>
+
+
+                      <div class="mxd-accordion__item">
+                        <div class="mxd-accordion__divider anim-uni-in-up"></div>
+                        <div class="mxd-accordion__title anim-uni-in-up">
+                          <h6>How was the 3D engine model prepared?</h6>
+                          <div class="mxd-accordion__arrow">
+                            <i class="ph ph-plus"></i>
+                          </div>
+                        </div>
+                        <div class="mxd-accordion__content">
+                          <p class="mxd-accordion__text">
+                            The engine model was exported in GLB format, optimized for web performance 
+                            by reducing unnecessary geometry, compressing textures and ensuring 
+                            efficient material setup for real-time rendering.
+                          </p>
+                        </div>
+                        <div class="mxd-accordion__divider anim-uni-in-up"></div>
+                      </div>
+
+
+                      <div class="mxd-accordion__item">
+                        <div class="mxd-accordion__divider anim-uni-in-up"></div>
+                        <div class="mxd-accordion__title anim-uni-in-up">
+                          <h6>How does the lighting system work?</h6>
+                          <div class="mxd-accordion__arrow">
+                            <i class="ph ph-plus"></i>
+                          </div>
+                        </div>
+                        <div class="mxd-accordion__content">
+                          <p class="mxd-accordion__text">
+                            The viewer uses HDR environment maps combined with physically based materials 
+                            (PBR) to achieve realistic reflections and lighting response. 
+                            ACES tone mapping is applied for cinematic color grading.
+                          </p>
+                        </div>
+                        <div class="mxd-accordion__divider anim-uni-in-up"></div>
+                      </div>
+
+
+                      <div class="mxd-accordion__item">
+                        <div class="mxd-accordion__divider anim-uni-in-up"></div>
+                        <div class="mxd-accordion__title anim-uni-in-up">
+                          <h6>How is camera interaction implemented?</h6>
+                          <div class="mxd-accordion__arrow">
+                            <i class="ph ph-plus"></i>
+                          </div>
+                        </div>
+                        <div class="mxd-accordion__content">
+                          <p class="mxd-accordion__text">
+                            Camera controls are handled via OrbitControls, allowing smooth rotation, 
+                            zooming and panning. Damping and motion tuning ensure fluid interaction 
+                            across desktop and mobile devices.
+                          </p>
+                        </div>
+                        <div class="mxd-accordion__divider anim-uni-in-up"></div>
+                      </div>
+
+
+                      <div class="mxd-accordion__item">
+                        <div class="mxd-accordion__divider anim-uni-in-up"></div>
+                        <div class="mxd-accordion__title anim-uni-in-up">
+                          <h6>How was performance optimized?</h6>
+                          <div class="mxd-accordion__arrow">
+                            <i class="ph ph-plus"></i>
+                          </div>
+                        </div>
+                        <div class="mxd-accordion__content">
+                          <p class="mxd-accordion__text">
+                            The scene uses optimized geometry scaling, pixel ratio clamping, 
+                            efficient lighting setup and dynamic camera fitting. 
+                            The renderer is tuned to balance visual fidelity and frame stability.
+                          </p>
+                        </div>
+                        <div class="mxd-accordion__divider anim-uni-in-up"></div>
+                      </div>
+
+
+                      <div class="mxd-accordion__item">
+                        <div class="mxd-accordion__divider anim-uni-in-up"></div>
+                        <div class="mxd-accordion__title anim-uni-in-up">
+                          <h6>What makes this project unique?</h6>
+                          <div class="mxd-accordion__arrow">
+                            <i class="ph ph-plus"></i>
+                          </div>
+                        </div>
+                        <div class="mxd-accordion__content">
+                          <p class="mxd-accordion__text">
+                            Beyond being a simple 3D viewer, this project focuses on presentation quality, 
+                            cinematic lighting, responsive behavior and integration within a modern 
+                            UI/UX system — creating a complete interactive experience rather than 
+                            just displaying a model.
+                          </p>
+                        </div>
+                        <div class="mxd-accordion__divider anim-uni-in-up"></div>
+                      </div>
+
+
+                    </div>
+                  </div>
+
+                </div>
+                <!-- Inner Headline Content End -->
+
+              </div>
+            </div>
+          </div>
+          <!-- Block - Inner Page Headline End -->
+
+        </div>
+      </div>
+      <!-- Section - Inner Page Headline End -->
+
+</main>
+<!-- Page Content End -->
+
+
+
+    <!-- Footer Start -->
+  <footer id="mxd-footer" class="mxd-footer">
+
+    <div class="mxd-footer__text-wrap">
+      <div class="fullwidth-text__tl-trigger"></div>
+      <div class="mxd-footer__fullwidth-text anim-top-to-bottom">
+        <svg class="mxd-footer__svg-v2" viewBox="0 0 400 72">
+          <text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle"
+            font-family="Poppins, sans-serif" font-size="48" font-weight="600" fill="currentColor">
+            Armin Lisic
+          </text>
+        </svg>
+      </div>
+    </div>
+
+    <div class="mxd-footer__footer-blocks">
+
+      <div class="footer-blocks__column animate-card-3">
+        <div class="footer-blocks__card fullheight-card">
+          <div class="footer-blocks__nav">
+            <ul class="footer-nav">
+              <li class="footer-nav__item anim-uni-in-up"><a href="/index.html" class="footer-nav__link btn-anim"><span class="btn-caption">Portfolio</span></a></li>
+              <li class="footer-nav__item anim-uni-in-up"><a href="/pages/myskills.html" class="footer-nav__link btn-anim"><span class="btn-caption">My skills</span></a></li>
+              <li class="footer-nav__item anim-uni-in-up">
+                <a href="#"
+                  class="footer-nav__link btn-anim footer-projects-trigger"
+                  id="openProjectsMenu">
+                  <span class="btn-caption">My projects</span>
+                </a>
+              </li>
+              <li class="footer-nav__item anim-uni-in-up"><a href="/pages/nexora.html" class="footer-nav__link btn-anim"><span class="btn-caption">Nexora 2.0</span></a></li>
+              <li class="footer-nav__item anim-uni-in-up"><a href="/pages/contact.html" class="footer-nav__link btn-anim"><span class="btn-caption">Contact</span></a></li>
+            </ul>
+          </div>
+
+          <div class="footer-blocks__links anim-uni-in-up">
+            <a class="btn btn-line-xsmall btn-muted slide-right anim-no-delay" href="/pages/legal/Privacypolicy.html">
+              <span class="btn-caption">Privacy Policy</span>
+              <i class="ph ph-arrow-right"></i>
+            </a>
+            <a class="btn btn-line-xsmall btn-muted slide-right anim-no-delay" href="/pages/legal/terms.html">
+              <span class="btn-caption">Terms &amp; conditions</span>
+              <i class="ph ph-arrow-right"></i>
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <div class="footer-blocks__column animate-card-3">
+        <div class="footer-blocks__card">
+          <p class="mxd-point-subtitle anim-uni-in-up">
+            <a href="mailto:armin.lisic000@gmail.com?subject=Message%20from%20your%20site">armin.lisic000@gmail.com</a>
+          </p>
+        </div>
+        <div class="footer-blocks__card">
+          <p class="mxd-point-subtitle anim-uni-in-up">
+            <a href="tel:+385993362341">+385 99 336 2341</a>
+          </p>
+        </div>
+
+        <div class="footer-blocks__card fill-card notify">
+          <div class="footer-blocks__title anim-uni-in-up">
+            <p class="footer-blocks__title-m">GitHub Projects</p>
+          </div>
+
+          <div class="footer-blocks__github anim-uni-in-up">
+            <ul class="footer-github-list">
+              <li><a href="https://github.com/Armin-000/Nexora-2.0" target="_blank">Nexora 2.0 <i class="ph ph-arrow-up-right"></i></a></li>
+              <li><a href="https://github.com/Armin-000/EcoCube" target="_blank">EcoCube 3D Viewer <i class="ph ph-arrow-up-right"></i></a></li>
+              <li><a href="https://github.com/Armin-000/3D-Model-Engine" target="_blank">3D Engine Viewer <i class="ph ph-arrow-up-right"></i></a></li>
+              <li><a href="https://github.com/Armin-000/Matrix-code-AlphaWave" target="_blank">Matrix Code <i class="ph ph-arrow-up-right"></i></a></li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <div class="footer-blocks__column animate-card-3">
+        <div class="footer-blocks__card fullheight-card">
+          <div class="footer-blocks__block">
+
+            <div class="footer-blocks__title anim-uni-in-up">
+              <p class="footer-blocks__title-l">Platforms</p>
+            </div>
+
+            <div class="footer-blocks__socials">
+              <ul class="footer-socials">
+
+                <!-- Facebook -->
+                <li class="footer-socials__item anim-uni-in-up">
+                  <a href="https://www.facebook.com/armin.lisic" class="footer-socials__link footer-social-with-icon" target="_blank">
+                    <svg class="footer-social-icon" viewBox="0 0 24 24" aria-hidden="true">
+                      <path d="M9.101 23.691v-7.98H6.627v-3.667h2.474v-1.58c0-4.085 1.848-5.978 5.858-5.978.401 0 .955.042 1.468.103a8.68 8.68 0 0 1 1.141.195v3.325a8.623 8.623 0 0 0-.653-.036 26.805 26.805 0 0 0-.733-.009c-.707 0-1.259.096-1.675.309a1.686 1.686 0 0 0-.679.622c-.258.42-.374.995-.374 1.752v1.297h3.919l-.386 2.103-.287 1.564h-3.246v8.245C19.396 23.238 24 18.179 24 12.044c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.628 3.874 10.35 9.101 11.647Z"/></svg>
+                    <span>Facebook</span>
+                  </a>
+                </li>
+
+                <!-- Instagram -->
+                <li class="footer-socials__item anim-uni-in-up">
+                  <a href="https://www.instagram.com/arminlisic/" class="footer-socials__link footer-social-with-icon" target="_blank">
+                    <svg class="footer-social-icon" viewBox="0 0 24 24" aria-hidden="true">
+                      <path d="M7.0301.084c-1.2768.0602-2.1487.264-2.911.5634-.7888.3075-1.4575.72-2.1228 1.3877-.6652.6677-1.075 1.3368-1.3802 2.127-.2954.7638-.4956 1.6365-.552 2.914-.0564 1.2775-.0689 1.6882-.0626 4.947.0062 3.2586.0206 3.6671.0825 4.9473.061 1.2765.264 2.1482.5635 2.9107.308.7889.72 1.4573 1.388 2.1228.6679.6655 1.3365 1.0743 2.1285 1.38.7632.295 1.6361.4961 2.9134.552 1.2773.056 1.6884.069 4.9462.0627 3.2578-.0062 3.668-.0207 4.9478-.0814 1.28-.0607 2.147-.2652 2.9098-.5633.7889-.3086 1.4578-.72 2.1228-1.3881.665-.6682 1.0745-1.3378 1.3795-2.1284.2957-.7632.4966-1.636.552-2.9124.056-1.2809.0692-1.6898.063-4.948-.0063-3.2583-.021-3.6668-.0817-4.9465-.0607-1.2797-.264-2.1487-.5633-2.9117-.3084-.7889-.72-1.4568-1.3876-2.1228C21.2982 1.33 20.628.9208 19.8378.6165 19.074.321 18.2017.1197 16.9244.0645 15.6471.0093 15.236-.005 11.977.0014 8.718.0076 8.31.0215 7.0301.0839m.1402 21.6932c-1.17-.0509-1.8053-.2453-2.2287-.408-.5606-.216-.96-.4771-1.3819-.895-.422-.4178-.6811-.8186-.9-1.378-.1644-.4234-.3624-1.058-.4171-2.228-.0595-1.2645-.072-1.6442-.079-4.848-.007-3.2037.0053-3.583.0607-4.848.05-1.169.2456-1.805.408-2.2282.216-.5613.4762-.96.895-1.3816.4188-.4217.8184-.6814 1.3783-.9003.423-.1651 1.0575-.3614 2.227-.4171 1.2655-.06 1.6447-.072 4.848-.079 3.2033-.007 3.5835.005 4.8495.0608 1.169.0508 1.8053.2445 2.228.408.5608.216.96.4754 1.3816.895.4217.4194.6816.8176.9005 1.3787.1653.4217.3617 1.056.4169 2.2263.0602 1.2655.0739 1.645.0796 4.848.0058 3.203-.0055 3.5834-.061 4.848-.051 1.17-.245 1.8055-.408 2.2294-.216.5604-.4763.96-.8954 1.3814-.419.4215-.8181.6811-1.3783.9-.4224.1649-1.0577.3617-2.2262.4174-1.2656.0595-1.6448.072-4.8493.079-3.2045.007-3.5825-.006-4.848-.0608M16.953 5.5864A1.44 1.44 0 1 0 18.39 4.144a1.44 1.44 0 0 0-1.437 1.4424M5.8385 12.012c.0067 3.4032 2.7706 6.1557 6.173 6.1493 3.4026-.0065 6.157-2.7701 6.1506-6.1733-.0065-3.4032-2.771-6.1565-6.174-6.1498-3.403.0067-6.156 2.771-6.1496 6.1738M8 12.0077a4 4 0 1 1 4.008 3.9921A3.9996 3.9996 0 0 1 8 12.0077"/></svg>
+                    <span>Instagram</span>
+                  </a>
+                </li>
+
+                <!-- GitHub -->
+                <li class="footer-socials__item anim-uni-in-up">
+                  <a href="https://github.com/Armin-000" class="footer-socials__link footer-social-with-icon" target="_blank">
+                    <svg class="footer-social-icon" viewBox="0 0 24 24" aria-hidden="true">
+                      <path d="M12 .297c-6.63 0-12 5.373-12 12 
+                      0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 
+                      0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61
+                      C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729
+                      1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 
+                      3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93
+                      0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176
+                      0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405
+                      1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 
+                      3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 
+                      1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92
+                      .42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 
+                      3.286 0 .315.21.69.825.57C20.565 22.092 
+                      24 17.592 24 12.297c0-6.627-5.373-12-12-12"/>
+                    </svg>
+                    <span>GitHub</span>
+                  </a>
+                </li>
+
+                <!-- Codepen -->
+                <li class="footer-socials__item anim-uni-in-up">
+                  <a href="https://codepen.io/" class="footer-socials__link footer-social-with-icon" target="_blank">
+                    <svg class="footer-social-icon" viewBox="0 0 24 24" aria-hidden="true">
+                      <path d="M12 2l9 6v8l-9 6-9-6V8l9-6zm0 
+                      2.18L5.82 8 12 11.82 18.18 8 12 4.18zM4 
+                      9.87v4.26l6 3.69v-4.26L4 9.87zm14 
+                      0l-6 3.69v4.26l6-3.69V9.87z"/>
+                    </svg>
+                    <span>Codepen</span>
+                  </a>
+                </li>
+
+              </ul>
+            </div>
+          </div>
+
+          <div class="footer-blocks__links anim-uni-in-up">
+            <p class="t-xsmall t-muted">
+              <a class="no-effect" href="#" target="_blank">Armin_Lisic</a>
+              <i class="ph-bold ph-copyright"></i>
+              2026
+            </p>
+          </div>
+
+        </div>
+      </div>
+
+    </div>
+
+  </footer>
+  <!-- Footer End -->
+
+    <!-- To Top Button Start -->
+    <a href="#0" id="to-top" class="btn btn-to-top slide-up anim-no-delay">
+      <i class="ph ph-arrow-up"></i>
+    </a>
+    <!-- To Top Button End -->
+
+    <!-- Load Scripts Start -->
+    <script src="/js/libs.min.js"></script>
+    <script src="/js/app.js"></script>
+    <script type="module" src="/js/projects/engine-viewer.js"></script>
+    <!-- Load Scripts End -->
+    
+  </body>
+
+</html>
