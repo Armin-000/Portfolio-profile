@@ -48,14 +48,12 @@ Portfolio-profile-main/
 │
 ├── pages/
 │   ├── portfolio.html
-│   ├── projects.html
 │   ├── contact.html
 │   ├── engine.html
 │   ├── myskills.html
 │   ├── matrix.html
 │   ├── ecocube.html
 │   ├── nexora.html
-│   ├── comingsoon.html
 │   └── legal/
 │       ├── Privacypolicy.html
 │       └── terms.html
