@@ -21983,3 +21983,45 @@ html[color-scheme="dark"] .mxd-logo__image {
     height: 44px;
   }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/* === ABOUT: premium icon thumbs === */
+.about-thumb{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  overflow:hidden;
+  position:relative;
+  font-size: 150px;
+}
+
+/* === Sidebar snapshot thumbs === */
+.snap-thumb{
+
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+
+.snap-thumb i{
+  font-size: 50px;
+  opacity: .9;
+}
