@@ -1496,43 +1496,17 @@ gsap.to("[data-speed]", {
 
 
 
-
 document.addEventListener("DOMContentLoaded", async () => {
   const host = document.getElementById("canvas");
   if (!host) return;
 
+  // Respect reduced motion
   if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
 
   const isTouchDevice =
     window.matchMedia("(hover: none)").matches ||
     window.matchMedia("(pointer: coarse)").matches ||
     navigator.maxTouchPoints > 0;
-
-  // ------------------------------------------------------------
-  // STOP touch/pointer input from reaching TubesCursor (touch only)
-  // Register BEFORE TubesCursor() so we win event order.
-  // ------------------------------------------------------------
-  if (isTouchDevice) {
-    const swallow = (e) => {
-      // Pointer Events path (modern)
-      if (e.type.startsWith("pointer")) {
-        if (e.pointerType === "touch") e.stopImmediatePropagation();
-        return;
-      }
-      // Touch Events fallback
-      e.stopImmediatePropagation();
-    };
-
-    const opts = { capture: true, passive: true };
-
-    window.addEventListener("pointerdown", swallow, opts);
-    window.addEventListener("pointermove", swallow, opts);
-    window.addEventListener("pointerup", swallow, opts);
-
-    window.addEventListener("touchstart", swallow, opts);
-    window.addEventListener("touchmove", swallow, opts);
-    window.addEventListener("touchend", swallow, opts);
-  }
 
   const { default: TubesCursor } = await import(
     "https://cdn.jsdelivr.net/npm/threejs-components@0.0.19/build/cursors/tubes1.min.js"
@@ -1547,8 +1521,10 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   const renderer = app?.renderer;
   const gl = renderer?.domElement;
+
   if (renderer) renderer.setClearColor(0x000000, 0);
 
+  // Position canvas behind content
   const lockBehind = (el) => {
     if (!el) return;
     el.style.position = "fixed";
@@ -1558,9 +1534,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     el.style.display = "block";
     el.style.pointerEvents = "none";
     el.style.background = "transparent";
-    el.style.mixBlendMode = "normal";
-    el.style.filter = "none";
-    el.style.opacity = "1";
     el.style.zIndex = "-1";
     el.style.transform = "translateZ(0)";
   };
@@ -1570,25 +1543,26 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   const isMobile =
     window.innerWidth < 768 || /Mobi|Android/i.test(navigator.userAgent);
+
   const DPR_CAP = isMobile ? 0.5 : 0.65;
 
-  // ----------------------------------------------------------------
-  // STABLE viewport sizing on mobile (address bar safe) + throttling
-  // ----------------------------------------------------------------
+  // ------------------------------------------------------------
+  // Stable viewport sizing
+  // ------------------------------------------------------------
   const vv = window.visualViewport || null;
 
   function getViewportSize() {
-    // visualViewport is more stable during mobile scroll
     const w = vv ? Math.round(vv.width) : document.documentElement.clientWidth;
     const h = vv ? Math.round(vv.height) : document.documentElement.clientHeight;
     return { w, h };
   }
 
   let resizeRAF = 0;
+
   function sync() {
     if (!renderer) return;
-
     if (resizeRAF) return;
+
     resizeRAF = requestAnimationFrame(() => {
       resizeRAF = 0;
 
@@ -1604,10 +1578,16 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   if (vv) {
     vv.addEventListener("resize", sync, { passive: true });
-    vv.addEventListener("scroll", sync, { passive: true }); // iOS can shift vv on scroll
+    vv.addEventListener("scroll", sync, { passive: true });
   } else {
     window.addEventListener("resize", sync, { passive: true });
   }
+
+  // ------------------------------------------------------------
+  // Render loop with FPS cap
+  // ------------------------------------------------------------
+  const renderFn = app?.render || app?.update;
+  if (typeof renderFn !== "function") return;
 
   const FPS = isMobile ? 24 : 30;
   const frameInterval = 1000 / FPS;
@@ -1616,20 +1596,19 @@ document.addEventListener("DOMContentLoaded", async () => {
   let rafId = 0;
   let lastT = 0;
 
-  const renderFn =
-    app?.render || app?.update || renderer?.render?.bind(renderer) || null;
-
   function loop(t) {
     if (!running) return;
+
     rafId = requestAnimationFrame(loop);
+
     if (t - lastT < frameInterval) return;
     lastT = t;
-    if (typeof renderFn === "function") renderFn(t);
+
+    renderFn(t);
   }
 
   function pause() {
     running = false;
-    if (renderer?.setAnimationLoop) renderer.setAnimationLoop(null);
     if (rafId) cancelAnimationFrame(rafId);
     rafId = 0;
   }
@@ -1637,46 +1616,21 @@ document.addEventListener("DOMContentLoaded", async () => {
   function resume() {
     if (running) return;
     running = true;
-    sync();
     lastT = 0;
-    if (typeof renderFn === "function") rafId = requestAnimationFrame(loop);
+    rafId = requestAnimationFrame(loop);
   }
 
-  if (typeof renderFn === "function") rafId = requestAnimationFrame(loop);
+  rafId = requestAnimationFrame(loop);
 
   document.addEventListener("visibilitychange", () => {
     if (document.hidden) pause();
-    else {
-      running = false;
-      resume();
-    }
+    else resume();
   });
 
-  // ----------------------------------------------------------------
-  // Desktop: idle pause on pointermove
-  // Touch: pause while scrolling, resume when scroll settles
-  // ----------------------------------------------------------------
-  if (!isTouchDevice) {
-    let idleTimer = 0;
-    const IDLE_MS = 900;
-
-    let lastBump = 0;
-    const BUMP_EVERY_MS = 120;
-
-    function bumpActivity() {
-      const now = performance.now();
-      if (now - lastBump < BUMP_EVERY_MS) return;
-      lastBump = now;
-
-      resume();
-      clearTimeout(idleTimer);
-      idleTimer = setTimeout(pause, IDLE_MS);
-    }
-
-    window.addEventListener("pointermove", bumpActivity, { passive: true });
-    bumpActivity();
-  } else {
-    // Touch devices: keep rendering, but stop during active scroll to prevent "crazy" behavior
+  // ------------------------------------------------------------
+  // Touch devices: pause during scroll
+  // ------------------------------------------------------------
+  if (isTouchDevice) {
     let scrollTimer = 0;
     const SCROLL_IDLE_MS = 140;
 
@@ -1684,17 +1638,12 @@ document.addEventListener("DOMContentLoaded", async () => {
       pause();
       sync();
       clearTimeout(scrollTimer);
-      scrollTimer = setTimeout(() => {
-        resume();
-      }, SCROLL_IDLE_MS);
+      scrollTimer = setTimeout(resume, SCROLL_IDLE_MS);
     };
 
     window.addEventListener("scroll", onScroll, { passive: true });
-
-    resume();
   }
 });
-
 
 
 
