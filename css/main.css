@@ -2770,6 +2770,10 @@ p.t-semibold {
   overflow: hidden;
 }
 
+.post-simple__btn > a + a {
+  margin-left: 12px;
+}
+
 .btn-small {
   height: 4.4rem;
   line-height: 4.4rem;
@@ -22020,3 +22024,4 @@ html[color-scheme="dark"] .mxd-logo__image {
   font-size: 50px;
   opacity: .9;
 }
+
