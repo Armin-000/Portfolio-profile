@@ -11518,7 +11518,16 @@ form textarea:required:valid {
   }
 }
 
-
+.post-simple__thumb {
+  position: relative;
+  display: -webkit-box;
+  display: -moz-box;
+  display: -ms-flexbox;
+  display: flex;
+  width: 100%;
+  height: 240px;
+  overflow: hidden;
+}
 .post-simple__thumb img {
   width: 100%;
   height: 100%;
@@ -12177,11 +12186,6 @@ form textarea:required:valid {
   gap: 3rem;
   padding: 3rem;
   border: 2px solid #11cee3;
-}
-@media only screen and (min-width: 768px) {
-  .mxd-sidebar__widget {
-    padding: 4rem;
-  }
 }
 
 .widget__title p {
