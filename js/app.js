@@ -1496,35 +1496,49 @@ gsap.to("[data-speed]", {
 
 
 
-document.addEventListener("DOMContentLoaded", async () => {
+document.addEventListener("DOMContentLoaded", () => {
+  void initTubesBackground();
+});
+
+async function initTubesBackground() {
   const host = document.getElementById("canvas");
   if (!host) return;
 
-  if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+  // Respect reduced motion
+  if (window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches) return;
 
-  const isTouchDevice =
-    window.matchMedia("(hover: none)").matches ||
-    window.matchMedia("(pointer: coarse)").matches ||
-    navigator.maxTouchPoints > 0;
+  const env = getEnv();
 
-  const { default: TubesCursor } = await import(
-    "https://cdn.jsdelivr.net/npm/threejs-components@0.0.19/build/cursors/tubes1.min.js"
-  );
+  const CONFIG = {
+    importUrl:
+      "https://cdn.jsdelivr.net/npm/threejs-components@0.0.19/build/cursors/tubes1.min.js",
 
-  const COLORS = ["#11cee3", "#058391", "#006e7a", "#017380"];
+    colors: ["#11cee3", "#058391", "#006e7a", "#017380"],
 
-  // ------------------------------------------------------------
-  // HARD BLOCK: Prevent the library from attaching touch/pointer listeners
-  // (only while creating the cursor instance)
-  // ------------------------------------------------------------
-  function withNoTouchListeners(fn) {
-    const proto = EventTarget && EventTarget.prototype;
-    if (!proto || typeof proto.addEventListener !== "function") return fn();
+    renderer: {
+      alpha: true,
+      antialias: false,
+      powerPreference: "low-power"
+    },
 
-    const original = proto.addEventListener;
+    tubes: {
+      lightsIntensity: 18
+    },
 
-    // Block touch + pointer events (so it cannot react to finger)
-    const blocked = new Set([
+    fps: env.isMobile ? 24 : 30,
+
+    // DPR cap (normalized) - keep this conservative for mobile battery/thermals
+    dprCap: env.isMobile ? 0.5 : 0.65,
+
+    // On touch devices we keep pointer fixed to avoid coordinate jumps
+    fixedPointerOnTouch: true,
+    fixedPointer: { x: 0.5, y: 0.5 },
+
+    // Touch scroll pause "settle" time
+    scrollIdleMs: 160,
+
+    // Block these events only while creating the cursor instance
+    blockedEventTypes: [
       "touchstart",
       "touchmove",
       "touchend",
@@ -1532,165 +1546,325 @@ document.addEventListener("DOMContentLoaded", async () => {
       "pointerdown",
       "pointermove",
       "pointerup",
-      "pointercancel",
-    ]);
-
-    proto.addEventListener = function (type, listener, options) {
-      try {
-        // also block "touch*" and "pointer*" generically, just in case
-        if (blocked.has(type) || String(type).startsWith("touch") || String(type).startsWith("pointer")) {
-          return;
-        }
-      } catch (_) {}
-      return original.call(this, type, listener, options);
-    };
-
-    try {
-      return fn();
-    } finally {
-      proto.addEventListener = original;
-    }
-  }
-
-  const app = isTouchDevice
-    ? withNoTouchListeners(() =>
-        TubesCursor(host, {
-          renderer: { alpha: true, antialias: false, powerPreference: "low-power" },
-          tubes: { colors: COLORS, lights: { intensity: 18, colors: COLORS } },
-        })
-      )
-    : TubesCursor(host, {
-        renderer: { alpha: true, antialias: false, powerPreference: "low-power" },
-        tubes: { colors: COLORS, lights: { intensity: 18, colors: COLORS } },
-      });
-
-  const renderer = app?.renderer;
-  const gl = renderer?.domElement;
-  if (renderer) renderer.setClearColor(0x000000, 0);
-
-  const lockBehind = (el) => {
-    if (!el) return;
-    el.style.position = "fixed";
-    el.style.inset = "0";
-    el.style.width = "100vw";
-    el.style.height = "100vh";
-    el.style.display = "block";
-    el.style.pointerEvents = "none";
-    el.style.background = "transparent";
-    el.style.zIndex = "-1";
-    el.style.transform = "translateZ(0)";
+      "pointercancel"
+    ]
   };
 
+  // 1) Import cursor module
+  const TubesCursor = await safeImportDefault(CONFIG.importUrl);
+  if (!TubesCursor) return;
+
+  // 2) Lock canvas behind content before init (prevents layout flashes)
   lockBehind(host);
+
+  // 3) Init app (with hard touch listener block on touch devices)
+  const app = env.isTouchDevice
+    ? withTemporarilyBlockedListeners(CONFIG.blockedEventTypes, () =>
+        createApp(TubesCursor, host, CONFIG)
+      )
+    : createApp(TubesCursor, host, CONFIG);
+
+  if (!app?.renderer) return;
+
+  const renderer = app.renderer;
+  const gl = renderer.domElement;
+
+  // Make the underlying canvas transparent
+  renderer.setClearColor?.(0x000000, 0);
+
+  // Ensure the WebGL canvas is also fixed/behind
   lockBehind(gl);
+
+  // 4) Sizing (visualViewport-safe)
+  const viewport = createViewportController({
+    renderer,
+    dprCap: CONFIG.dprCap
+  });
+  viewport.sync();
+
+  // 5) Pointer policy
+  const pointer = createPointerController({
+    app,
+    env,
+    getViewportSize: viewport.getSize,
+    fixedPointer: CONFIG.fixedPointer,
+    fixedOnTouch: CONFIG.fixedPointerOnTouch
+  });
+  pointer.init();
+
+  // 6) Render loop with FPS cap + lifecycle hooks
+  const renderFn = app.render || app.update;
+  if (typeof renderFn !== "function") return;
+
+  const loop = createFpsLoop({
+    fps: CONFIG.fps,
+    tick: (t) => {
+      if (env.isTouchDevice && CONFIG.fixedPointerOnTouch) {
+        pointer.setNormalized(CONFIG.fixedPointer.x, CONFIG.fixedPointer.y);
+      }
+      renderFn(t);
+    }
+  });
+  loop.start();
+
+  // 7) Pause/resume when tab hidden
+  const onVisibility = () => (document.hidden ? loop.stop() : loop.start(true));
+  document.addEventListener("visibilitychange", onVisibility, { passive: true });
+
+  // 8) Touch: pause during scroll to avoid viewport+input race conditions
+  let onScroll = null;
+  if (env.isTouchDevice) {
+    onScroll = createScrollPauseHandler({
+      onPause: () => loop.stop(),
+      onResume: () => loop.start(true),
+      onSync: () => viewport.sync(),
+      idleMs: CONFIG.scrollIdleMs
+    });
+    window.addEventListener("scroll", onScroll, { passive: true });
+  }
+
+  // 9) Optional: provide a cleanup hook if you ever need to destroy/unmount
+  // (useful in SPAs)
+  const cleanup = () => {
+    loop.stop();
+    pointer.destroy();
+    viewport.destroy();
+    document.removeEventListener("visibilitychange", onVisibility);
+    if (onScroll) window.removeEventListener("scroll", onScroll);
+  };
+
+  // If you are in SPA: call cleanup() on route change/unmount
+  // window.__tubesCleanup?.(); window.__tubesCleanup = cleanup;
+}
+
+/* ----------------------------- helpers ----------------------------- */
+
+function getEnv() {
+  const isTouchDevice =
+    window.matchMedia?.("(hover: none)")?.matches ||
+    window.matchMedia?.("(pointer: coarse)")?.matches ||
+    (navigator.maxTouchPoints || 0) > 0;
 
   const isMobile =
     window.innerWidth < 768 || /Mobi|Android/i.test(navigator.userAgent);
-  const DPR_CAP = isMobile ? 0.5 : 0.65;
 
+  return { isTouchDevice, isMobile };
+}
+
+async function safeImportDefault(url) {
+  try {
+    const mod = await import(url);
+    return mod?.default || null;
+  } catch (err) {
+    console.warn("[tubes] import failed:", err);
+    return null;
+  }
+}
+
+function createApp(TubesCursor, host, CONFIG) {
+  return TubesCursor(host, {
+    renderer: CONFIG.renderer,
+    tubes: {
+      colors: CONFIG.colors,
+      lights: { intensity: CONFIG.tubes.lightsIntensity, colors: CONFIG.colors }
+    }
+  });
+}
+
+function lockBehind(el) {
+  if (!el) return;
+  el.style.position = "fixed";
+  el.style.inset = "0";
+  el.style.width = "100vw";
+  el.style.height = "100vh";
+  el.style.display = "block";
+  el.style.pointerEvents = "none";
+  el.style.background = "transparent";
+  el.style.zIndex = "-1";
+  el.style.transform = "translateZ(0)";
+}
+
+function withTemporarilyBlockedListeners(blockedTypes, fn) {
+  const proto = globalThis.EventTarget?.prototype;
+  const add = proto?.addEventListener;
+  if (typeof add !== "function") return fn();
+
+  const blocked = new Set(blockedTypes);
+
+  proto.addEventListener = function (type, listener, options) {
+    try {
+      const t = String(type);
+      if (blocked.has(t) || t.startsWith("touch") || t.startsWith("pointer")) return;
+    } catch (_) {}
+    return add.call(this, type, listener, options);
+  };
+
+  try {
+    return fn();
+  } finally {
+    proto.addEventListener = add;
+  }
+}
+
+function createViewportController({ renderer, dprCap }) {
   const vv = window.visualViewport || null;
+  let raf = 0;
 
-  function getViewportSize() {
+  const getSize = () => {
     const w = vv ? Math.round(vv.width) : document.documentElement.clientWidth;
     const h = vv ? Math.round(vv.height) : document.documentElement.clientHeight;
     return { w, h };
-  }
+  };
 
-  let resizeRAF = 0;
-  function sync() {
+  const sync = () => {
     if (!renderer) return;
-    if (resizeRAF) return;
+    if (raf) return;
 
-    resizeRAF = requestAnimationFrame(() => {
-      resizeRAF = 0;
-      const { w, h } = getViewportSize();
-      const dpr = Math.min(window.devicePixelRatio || 1, 2) * DPR_CAP;
+    raf = requestAnimationFrame(() => {
+      raf = 0;
+      const { w, h } = getSize();
+      const baseDpr = Math.min(window.devicePixelRatio || 1, 2);
+      const dpr = baseDpr * dprCap;
+
       renderer.setPixelRatio(Math.max(0.5, Math.min(1, dpr)));
       renderer.setSize(w, h, false);
     });
-  }
+  };
 
-  sync();
+  const onVVResize = () => sync();
+  const onVVScroll = () => sync();
+  const onWinResize = () => sync();
 
   if (vv) {
-    vv.addEventListener("resize", sync, { passive: true });
-    vv.addEventListener("scroll", sync, { passive: true });
+    vv.addEventListener("resize", onVVResize, { passive: true });
+    vv.addEventListener("scroll", onVVScroll, { passive: true });
   } else {
-    window.addEventListener("resize", sync, { passive: true });
+    window.addEventListener("resize", onWinResize, { passive: true });
   }
 
-  const renderFn = app?.render || app?.update;
-  if (typeof renderFn !== "function") return;
+  const destroy = () => {
+    if (raf) cancelAnimationFrame(raf);
+    raf = 0;
+    if (vv) {
+      vv.removeEventListener("resize", onVVResize);
+      vv.removeEventListener("scroll", onVVScroll);
+    } else {
+      window.removeEventListener("resize", onWinResize);
+    }
+  };
 
-  const FPS = isMobile ? 24 : 30;
-  const frameInterval = 1000 / FPS;
+  return { getSize, sync, destroy };
+}
 
-  let running = true;
+function createPointerController({
+  app,
+  env,
+  getViewportSize,
+  fixedPointer,
+  fixedOnTouch
+}) {
+  let onMove = null;
+
+  const setNormalized = (nx, ny) => {
+    nx = clamp01(nx);
+    ny = clamp01(ny);
+
+    // Best-effort for different cursor builds
+    try {
+      if (app?.pointer) {
+        app.pointer.x = nx;
+        app.pointer.y = ny;
+        return;
+      }
+      if (app?.mouse) {
+        app.mouse.x = nx;
+        app.mouse.y = ny;
+        return;
+      }
+      if (app?.params?.mouse) {
+        app.params.mouse.x = nx;
+        app.params.mouse.y = ny;
+        return;
+      }
+      if (app?.uniforms?.u_mouse?.value) {
+        app.uniforms.u_mouse.value.x = nx;
+        app.uniforms.u_mouse.value.y = ny;
+      }
+    } catch (_) {}
+  };
+
+  const init = () => {
+    if (env.isTouchDevice) {
+      if (fixedOnTouch) setNormalized(fixedPointer.x, fixedPointer.y);
+      return;
+    }
+
+    onMove = (e) => {
+      // only mouse/pen should affect it
+      if (e.pointerType && e.pointerType !== "mouse" && e.pointerType !== "pen") return;
+
+      const { w, h } = getViewportSize();
+      if (!w || !h) return;
+
+      setNormalized(e.clientX / w, e.clientY / h);
+    };
+
+    window.addEventListener("pointermove", onMove, { passive: true });
+  };
+
+  const destroy = () => {
+    if (onMove) window.removeEventListener("pointermove", onMove);
+    onMove = null;
+  };
+
+  return { init, destroy, setNormalized };
+}
+
+function createFpsLoop({ fps, tick }) {
+  const frameInterval = 1000 / fps;
+  let running = false;
   let rafId = 0;
   let lastT = 0;
 
-  // Optional: keep it stable on touch by forcing a fixed pointer
-  function setAppPointer(nx, ny) {
-    nx = Math.max(0, Math.min(1, nx));
-    ny = Math.max(0, Math.min(1, ny));
-    try {
-      if (app?.pointer) { app.pointer.x = nx; app.pointer.y = ny; return; }
-      if (app?.mouse) { app.mouse.x = nx; app.mouse.y = ny; return; }
-      if (app?.params?.mouse) { app.params.mouse.x = nx; app.params.mouse.y = ny; return; }
-      if (app?.uniforms?.u_mouse?.value) { app.uniforms.u_mouse.value.x = nx; app.uniforms.u_mouse.value.y = ny; return; }
-    } catch (_) {}
-  }
-
-  if (isTouchDevice) setAppPointer(0.5, 0.5);
-
-  function loop(t) {
+  const loop = (t) => {
     if (!running) return;
-
     rafId = requestAnimationFrame(loop);
 
     if (t - lastT < frameInterval) return;
     lastT = t;
 
-    if (isTouchDevice) setAppPointer(0.5, 0.5);
+    tick(t);
+  };
 
-    renderFn(t);
-  }
+  const start = (resetTime = false) => {
+    if (running) return;
+    running = true;
+    if (resetTime) lastT = 0;
+    rafId = requestAnimationFrame(loop);
+  };
 
-  function pause() {
+  const stop = () => {
     running = false;
     if (rafId) cancelAnimationFrame(rafId);
     rafId = 0;
-  }
+  };
 
-  function resume() {
-    if (running) return;
-    running = true;
-    lastT = 0;
-    rafId = requestAnimationFrame(loop);
-  }
+  return { start, stop };
+}
 
-  rafId = requestAnimationFrame(loop);
+function createScrollPauseHandler({ onPause, onResume, onSync, idleMs }) {
+  let timer = 0;
+  return () => {
+    onPause?.();
+    onSync?.();
+    clearTimeout(timer);
+    timer = setTimeout(() => onResume?.(), idleMs);
+  };
+}
 
-  document.addEventListener("visibilitychange", () => {
-    if (document.hidden) pause();
-    else resume();
-  });
-
-  // Touch: pause during scroll
-  if (isTouchDevice) {
-    let scrollTimer = 0;
-    const SCROLL_IDLE_MS = 160;
-
-    const onScroll = () => {
-      pause();
-      sync();
-      clearTimeout(scrollTimer);
-      scrollTimer = setTimeout(resume, SCROLL_IDLE_MS);
-    };
-
-    window.addEventListener("scroll", onScroll, { passive: true });
-  }
-});
+function clamp01(v) {
+  return Math.max(0, Math.min(1, v));
+}
 
 
 
