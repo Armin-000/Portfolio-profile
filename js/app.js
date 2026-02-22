@@ -1604,6 +1604,9 @@ document.addEventListener("DOMContentLoaded", async () => {
     if (t - lastT < frameInterval) return;
     lastT = t;
 
+    // Na touch uređajima “zakucaj” pointer u centar da ne skače na dodir
+    if (isTouchDevice) setAppPointer(0.5, 0.5);
+
     renderFn(t);
   }
 
@@ -1628,20 +1631,108 @@ document.addEventListener("DOMContentLoaded", async () => {
   });
 
   // ------------------------------------------------------------
-  // Touch devices: pause during scroll
+  // (NEW) Touch devices: DO NOT use touch as input
+  // + pause while touching/scrolling to prevent “poblesavi”
   // ------------------------------------------------------------
+  const NO_TOUCH_INPUT = isTouchDevice;
+
+  // Best-effort setter for different cursor builds
+  function setAppPointer(nx, ny) {
+    // clamp
+    nx = Math.max(0, Math.min(1, nx));
+    ny = Math.max(0, Math.min(1, ny));
+
+    // Some libs store normalized [0..1], some store px
+    // We try a few common shapes safely:
+    try {
+      if (app?.pointer) {
+        app.pointer.x = nx;
+        app.pointer.y = ny;
+        return;
+      }
+      if (app?.mouse) {
+        app.mouse.x = nx;
+        app.mouse.y = ny;
+        return;
+      }
+      if (app?.params?.mouse) {
+        app.params.mouse.x = nx;
+        app.params.mouse.y = ny;
+        return;
+      }
+      if (app?.uniforms?.u_mouse?.value) {
+        app.uniforms.u_mouse.value.x = nx;
+        app.uniforms.u_mouse.value.y = ny;
+        return;
+      }
+    } catch (_) {}
+  }
+
+  // Desktop / non-touch: own pointer tracking (so we never depend on touch events)
+  if (!NO_TOUCH_INPUT) {
+    window.addEventListener(
+      "pointermove",
+      (e) => {
+        if (e.pointerType && e.pointerType !== "mouse" && e.pointerType !== "pen") return;
+
+        const { w, h } = getViewportSize();
+        if (!w || !h) return;
+
+        // normalized [0..1]
+        const nx = e.clientX / w;
+        const ny = e.clientY / h;
+
+        setAppPointer(nx, ny);
+      },
+      { passive: true }
+    );
+  } else {
+    // Touch device: start centered
+    setAppPointer(0.5, 0.5);
+  }
+
+  // Touch: pause during touch interactions & scrolling
   if (isTouchDevice) {
     let scrollTimer = 0;
-    const SCROLL_IDLE_MS = 140;
+    const SCROLL_IDLE_MS = 180;
+
+    const settle = () => {
+      clearTimeout(scrollTimer);
+      scrollTimer = setTimeout(() => resume(), SCROLL_IDLE_MS);
+    };
 
     const onScroll = () => {
       pause();
       sync();
-      clearTimeout(scrollTimer);
-      scrollTimer = setTimeout(resume, SCROLL_IDLE_MS);
+      settle();
+    };
+
+    // While finger is down/moving: pause to avoid sudden coordinate jumps
+    const onTouchStart = () => {
+      pause();
+      sync();
+      setAppPointer(0.5, 0.5);
+    };
+
+    const onTouchMove = () => {
+      // do NOT preventDefault (we want normal scroll)
+      pause();
+      sync();
+      settle();
+    };
+
+    const onTouchEnd = () => {
+      sync();
+      settle();
     };
 
     window.addEventListener("scroll", onScroll, { passive: true });
+
+    // capture: true so we react early, but we don’t block scrolling
+    window.addEventListener("touchstart", onTouchStart, { passive: true, capture: true });
+    window.addEventListener("touchmove", onTouchMove, { passive: true, capture: true });
+    window.addEventListener("touchend", onTouchEnd, { passive: true, capture: true });
+    window.addEventListener("touchcancel", onTouchEnd, { passive: true, capture: true });
   }
 });
 
