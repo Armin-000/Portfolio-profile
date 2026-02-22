@@ -1500,7 +1500,6 @@ document.addEventListener("DOMContentLoaded", async () => {
   const host = document.getElementById("canvas");
   if (!host) return;
 
-  // Respect reduced motion
   if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
 
   const isTouchDevice =
@@ -1514,17 +1513,61 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   const COLORS = ["#11cee3", "#058391", "#006e7a", "#017380"];
 
-  const app = TubesCursor(host, {
-    renderer: { alpha: true, antialias: false, powerPreference: "low-power" },
-    tubes: { colors: COLORS, lights: { intensity: 18, colors: COLORS } }
-  });
+  // ------------------------------------------------------------
+  // HARD BLOCK: Prevent the library from attaching touch/pointer listeners
+  // (only while creating the cursor instance)
+  // ------------------------------------------------------------
+  function withNoTouchListeners(fn) {
+    const proto = EventTarget && EventTarget.prototype;
+    if (!proto || typeof proto.addEventListener !== "function") return fn();
+
+    const original = proto.addEventListener;
+
+    // Block touch + pointer events (so it cannot react to finger)
+    const blocked = new Set([
+      "touchstart",
+      "touchmove",
+      "touchend",
+      "touchcancel",
+      "pointerdown",
+      "pointermove",
+      "pointerup",
+      "pointercancel",
+    ]);
+
+    proto.addEventListener = function (type, listener, options) {
+      try {
+        // also block "touch*" and "pointer*" generically, just in case
+        if (blocked.has(type) || String(type).startsWith("touch") || String(type).startsWith("pointer")) {
+          return;
+        }
+      } catch (_) {}
+      return original.call(this, type, listener, options);
+    };
+
+    try {
+      return fn();
+    } finally {
+      proto.addEventListener = original;
+    }
+  }
+
+  const app = isTouchDevice
+    ? withNoTouchListeners(() =>
+        TubesCursor(host, {
+          renderer: { alpha: true, antialias: false, powerPreference: "low-power" },
+          tubes: { colors: COLORS, lights: { intensity: 18, colors: COLORS } },
+        })
+      )
+    : TubesCursor(host, {
+        renderer: { alpha: true, antialias: false, powerPreference: "low-power" },
+        tubes: { colors: COLORS, lights: { intensity: 18, colors: COLORS } },
+      });
 
   const renderer = app?.renderer;
   const gl = renderer?.domElement;
-
   if (renderer) renderer.setClearColor(0x000000, 0);
 
-  // Position canvas behind content
   const lockBehind = (el) => {
     if (!el) return;
     el.style.position = "fixed";
@@ -1543,12 +1586,8 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   const isMobile =
     window.innerWidth < 768 || /Mobi|Android/i.test(navigator.userAgent);
-
   const DPR_CAP = isMobile ? 0.5 : 0.65;
 
-  // ------------------------------------------------------------
-  // Stable viewport sizing
-  // ------------------------------------------------------------
   const vv = window.visualViewport || null;
 
   function getViewportSize() {
@@ -1558,17 +1597,14 @@ document.addEventListener("DOMContentLoaded", async () => {
   }
 
   let resizeRAF = 0;
-
   function sync() {
     if (!renderer) return;
     if (resizeRAF) return;
 
     resizeRAF = requestAnimationFrame(() => {
       resizeRAF = 0;
-
       const { w, h } = getViewportSize();
       const dpr = Math.min(window.devicePixelRatio || 1, 2) * DPR_CAP;
-
       renderer.setPixelRatio(Math.max(0.5, Math.min(1, dpr)));
       renderer.setSize(w, h, false);
     });
@@ -1583,9 +1619,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     window.addEventListener("resize", sync, { passive: true });
   }
 
-  // ------------------------------------------------------------
-  // Render loop with FPS cap
-  // ------------------------------------------------------------
   const renderFn = app?.render || app?.update;
   if (typeof renderFn !== "function") return;
 
@@ -1596,6 +1629,20 @@ document.addEventListener("DOMContentLoaded", async () => {
   let rafId = 0;
   let lastT = 0;
 
+  // Optional: keep it stable on touch by forcing a fixed pointer
+  function setAppPointer(nx, ny) {
+    nx = Math.max(0, Math.min(1, nx));
+    ny = Math.max(0, Math.min(1, ny));
+    try {
+      if (app?.pointer) { app.pointer.x = nx; app.pointer.y = ny; return; }
+      if (app?.mouse) { app.mouse.x = nx; app.mouse.y = ny; return; }
+      if (app?.params?.mouse) { app.params.mouse.x = nx; app.params.mouse.y = ny; return; }
+      if (app?.uniforms?.u_mouse?.value) { app.uniforms.u_mouse.value.x = nx; app.uniforms.u_mouse.value.y = ny; return; }
+    } catch (_) {}
+  }
+
+  if (isTouchDevice) setAppPointer(0.5, 0.5);
+
   function loop(t) {
     if (!running) return;
 
@@ -1604,7 +1651,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     if (t - lastT < frameInterval) return;
     lastT = t;
 
-    // Na touch uređajima “zakucaj” pointer u centar da ne skače na dodir
     if (isTouchDevice) setAppPointer(0.5, 0.5);
 
     renderFn(t);
@@ -1630,109 +1676,19 @@ document.addEventListener("DOMContentLoaded", async () => {
     else resume();
   });
 
-  // ------------------------------------------------------------
-  // (NEW) Touch devices: DO NOT use touch as input
-  // + pause while touching/scrolling to prevent “poblesavi”
-  // ------------------------------------------------------------
-  const NO_TOUCH_INPUT = isTouchDevice;
-
-  // Best-effort setter for different cursor builds
-  function setAppPointer(nx, ny) {
-    // clamp
-    nx = Math.max(0, Math.min(1, nx));
-    ny = Math.max(0, Math.min(1, ny));
-
-    // Some libs store normalized [0..1], some store px
-    // We try a few common shapes safely:
-    try {
-      if (app?.pointer) {
-        app.pointer.x = nx;
-        app.pointer.y = ny;
-        return;
-      }
-      if (app?.mouse) {
-        app.mouse.x = nx;
-        app.mouse.y = ny;
-        return;
-      }
-      if (app?.params?.mouse) {
-        app.params.mouse.x = nx;
-        app.params.mouse.y = ny;
-        return;
-      }
-      if (app?.uniforms?.u_mouse?.value) {
-        app.uniforms.u_mouse.value.x = nx;
-        app.uniforms.u_mouse.value.y = ny;
-        return;
-      }
-    } catch (_) {}
-  }
-
-  // Desktop / non-touch: own pointer tracking (so we never depend on touch events)
-  if (!NO_TOUCH_INPUT) {
-    window.addEventListener(
-      "pointermove",
-      (e) => {
-        if (e.pointerType && e.pointerType !== "mouse" && e.pointerType !== "pen") return;
-
-        const { w, h } = getViewportSize();
-        if (!w || !h) return;
-
-        // normalized [0..1]
-        const nx = e.clientX / w;
-        const ny = e.clientY / h;
-
-        setAppPointer(nx, ny);
-      },
-      { passive: true }
-    );
-  } else {
-    // Touch device: start centered
-    setAppPointer(0.5, 0.5);
-  }
-
-  // Touch: pause during touch interactions & scrolling
+  // Touch: pause during scroll
   if (isTouchDevice) {
     let scrollTimer = 0;
-    const SCROLL_IDLE_MS = 180;
-
-    const settle = () => {
-      clearTimeout(scrollTimer);
-      scrollTimer = setTimeout(() => resume(), SCROLL_IDLE_MS);
-    };
+    const SCROLL_IDLE_MS = 160;
 
     const onScroll = () => {
       pause();
       sync();
-      settle();
-    };
-
-    // While finger is down/moving: pause to avoid sudden coordinate jumps
-    const onTouchStart = () => {
-      pause();
-      sync();
-      setAppPointer(0.5, 0.5);
-    };
-
-    const onTouchMove = () => {
-      // do NOT preventDefault (we want normal scroll)
-      pause();
-      sync();
-      settle();
-    };
-
-    const onTouchEnd = () => {
-      sync();
-      settle();
+      clearTimeout(scrollTimer);
+      scrollTimer = setTimeout(resume, SCROLL_IDLE_MS);
     };
 
     window.addEventListener("scroll", onScroll, { passive: true });
-
-    // capture: true so we react early, but we don’t block scrolling
-    window.addEventListener("touchstart", onTouchStart, { passive: true, capture: true });
-    window.addEventListener("touchmove", onTouchMove, { passive: true, capture: true });
-    window.addEventListener("touchend", onTouchEnd, { passive: true, capture: true });
-    window.addEventListener("touchcancel", onTouchEnd, { passive: true, capture: true });
   }
 });
 
