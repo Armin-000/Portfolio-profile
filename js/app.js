@@ -61,6 +61,10 @@
 /* global gsap, ScrollTrigger, Flip, imagesLoaded, Lenis, Typed, Modernizr, $, Ukiyo, SplitType, Swiper, SVGInjector */
 /* exported optionsNormal, optionsDecimal, optionsDecimalTwo, optionsPercent, optionsK, optionsPlus */
 
+if (window.gsap) {
+  gsap.config({ nullTargetWarn: false });
+}
+
 gsap.registerPlugin(ScrollTrigger);
 gsap.registerPlugin(Flip);
 
@@ -1274,18 +1278,23 @@ $(".btn-to-top").each(function () {
   });
 });
 
-gsap.to("[data-speed]", {
-  y: (i, el) =>
-    (1 - parseFloat(el.getAttribute("data-speed"))) *
-    ScrollTrigger.maxScroll(window),
-  ease: "none",
-  scrollTrigger: {
-    start: 0,
-    end: "max",
-    invalidateOnRefresh: true,
-    scrub: 0,
-  },
-});
+const parallaxElements = document.querySelectorAll("[data-speed]");
+
+if (parallaxElements.length) {
+  gsap.to(parallaxElements, {
+    y: (i, el) =>
+      (1 - parseFloat(el.getAttribute("data-speed"))) *
+      ScrollTrigger.maxScroll(window),
+    ease: "none",
+    scrollTrigger: {
+      start: 0,
+      end: "max",
+      invalidateOnRefresh: true,
+      scrub: 0
+    }
+  });
+}
+
 
 /* ======================================================================
    TUBES CANVAS BACKGROUND (PATCHED FOR PERFORMANCE)
