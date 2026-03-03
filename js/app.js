@@ -1297,11 +1297,9 @@ if (parallaxElements.length) {
 
 
 /* ======================================================================
-   TUBES CANVAS BACKGROUND (FINAL MOBILE FIX)
-   ✅ Works on mobile/tablet
-   ✅ NEVER reacts to touch (pointer frozen)
-   ✅ Prevents scroll freakout (pause render during scroll + ignore vv.scroll)
-   ✅ Prevents resize thrash (mobile: sync only on orientationchange)
+   TUBES CANVAS BACKGROUND (NO FINGER TRACKING ON MOBILE/TABLET)
+   ✅ Fix: tubes library listens on window/document → block MOVE events globally (capture)
+   ✅ Keeps scroll + taps working (no preventDefault)
 ====================================================================== */
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -1331,7 +1329,7 @@ async function initTubesBackground() {
     dprCap: env.isMobile ? 0.35 : 0.45,
     renderScale: env.isMobile ? 0.55 : 0.6,
 
-    // ✅ Touch must never control pointer
+    // ✅ Where to keep it fixed on touch devices
     fixedPointer: { x: 0.5, y: 0.5 },
   };
 
@@ -1349,59 +1347,53 @@ async function initTubesBackground() {
   renderer.setClearColor?.(0x000000, 0);
   lockBehind(gl);
 
-  // ✅ Make viewport stable on mobile:
-  // - DO NOT listen to visualViewport.scroll
-  // - On touch: sync only on orientationchange (not during scroll address-bar jitter)
+  // ✅ 1) THE REAL FIX:
+  // Block finger tracking by stopping MOVE events globally (capture),
+  // so tubes never receives them, even if it listens on window/document.
+  let unblockGlobalMoves = null;
+  if (env.isTouchDevice) {
+    unblockGlobalMoves = blockGlobalFingerTrackingMoves();
+  }
+
+  // ✅ 2) Optional safety: force pointer to stay fixed on touch devices
+  const setPointer = makePointerSetter(app);
+  if (env.isTouchDevice) {
+    setPointer(CONFIG.fixedPointer.x, CONFIG.fixedPointer.y);
+  }
+
   const viewport = createViewportController({
     renderer,
     dprCap: CONFIG.dprCap,
     renderScale: CONFIG.renderScale,
-    env,
   });
   viewport.sync(true);
-
-  // ✅ Freeze pointer HARD (works even if lib listens to window events)
-  const setPointer = makePointerSetter(app);
-  setPointer(CONFIG.fixedPointer.x, CONFIG.fixedPointer.y);
 
   const renderFn = app.render || app.update;
   if (typeof renderFn !== "function") return;
 
-  // ✅ Render loop
   const loop = createFpsLoop({
     fps: CONFIG.fps,
     tick: (t) => {
-      // Keep pointer frozen (cheap write; prevents any touch influence)
-      setPointer(CONFIG.fixedPointer.x, CONFIG.fixedPointer.y);
+      if (env.isTouchDevice) {
+        // keep it frozen (cheap write)
+        setPointer(CONFIG.fixedPointer.x, CONFIG.fixedPointer.y);
+      }
       renderFn(t);
     },
   });
   loop.start();
 
-  // ✅ FINAL: pause rendering while scrolling (mobile/tablet)
-  // This removes the “scroll makes canvas go crazy” permanently.
-  const scrollPause = createScrollPause({
-    enabled: env.isTouchDevice,
-    stop: () => loop.stop(),
-    start: () => loop.start(true),
-  });
-  scrollPause.init();
-
   // Pause when tab is hidden
   const onVisibility = () => (document.hidden ? loop.stop() : loop.start(true));
   document.addEventListener("visibilitychange", onVisibility, { passive: true });
 
-  // Desktop resize only (mobile handled by orientationchange inside viewport controller)
-  const onResize = () => {
-    if (!env.isTouchDevice) viewport.sync();
-  };
+  const onResize = () => viewport.sync();
   window.addEventListener("resize", onResize, { passive: true });
 
-  // Cleanup
   host.__tubesCleanup = () => {
     loop.stop();
-    scrollPause.destroy();
     viewport.destroy();
+    unblockGlobalMoves?.();
     document.removeEventListener("visibilitychange", onVisibility);
     window.removeEventListener("resize", onResize);
     delete host.dataset.tubesMounted;
@@ -1453,58 +1445,18 @@ function lockBehind(el) {
   el.style.transform = "translateZ(0)";
 }
 
-/**
- * ✅ Universal pointer setter:
- * Works across common shapes (app.pointer / app.mouse / uniforms / params)
- */
-function makePointerSetter(app) {
-  return (nx, ny) => {
-    nx = clamp01(nx);
-    ny = clamp01(ny);
-
-    try {
-      if (app?.pointer) {
-        app.pointer.x = nx;
-        app.pointer.y = ny;
-        return;
-      }
-      if (app?.mouse) {
-        app.mouse.x = nx;
-        app.mouse.y = ny;
-        return;
-      }
-      if (app?.params?.mouse) {
-        app.params.mouse.x = nx;
-        app.params.mouse.y = ny;
-        return;
-      }
-      if (app?.uniforms?.u_mouse?.value) {
-        app.uniforms.u_mouse.value.x = nx;
-        app.uniforms.u_mouse.value.y = ny;
-      }
-    } catch (_) {}
-  };
-}
-
-/**
- * ✅ Viewport controller
- * - Desktop: normal sync on resize / vv resize
- * - Touch: sync ONLY on orientationchange (prevents scroll/address-bar jitter resize thrash)
- */
-function createViewportController({ renderer, dprCap, renderScale = 0.6, env }) {
+function createViewportController({ renderer, dprCap, renderScale = 0.6 }) {
   const vv = window.visualViewport || null;
   let raf = 0;
 
   const getSize = () => {
-    // Use stable layout viewport on mobile: clientWidth/Height are steadier than vv during scroll
-    const w = document.documentElement.clientWidth;
-    const h = document.documentElement.clientHeight;
-    return { w: Math.round(w), h: Math.round(h) };
+    const w = vv ? Math.round(vv.width) : document.documentElement.clientWidth;
+    const h = vv ? Math.round(vv.height) : document.documentElement.clientHeight;
+    return { w, h };
   };
 
   const apply = () => {
     if (!renderer) return;
-
     const { w, h } = getSize();
 
     const baseDpr = Math.min(window.devicePixelRatio || 1, 2);
@@ -1535,85 +1487,29 @@ function createViewportController({ renderer, dprCap, renderScale = 0.6, env }) 
     });
   };
 
-  // Desktop behavior
   const onVVResize = () => sync();
+  const onVVScroll = () => sync();
   const onWinResize = () => sync();
 
-  // Touch behavior (orientation only)
-  const onOrientation = () => {
-    // give browser a moment to settle layout
-    setTimeout(() => sync(true), 120);
-  };
-
-  if (env.isTouchDevice) {
-    window.addEventListener("orientationchange", onOrientation, { passive: true });
-    // IMPORTANT: do NOT listen to visualViewport.scroll on mobile
-    // and also avoid resize spam from address bar while scrolling
+  if (vv) {
+    vv.addEventListener("resize", onVVResize, { passive: true });
+    vv.addEventListener("scroll", onVVScroll, { passive: true });
   } else {
-    if (vv) vv.addEventListener("resize", onVVResize, { passive: true });
     window.addEventListener("resize", onWinResize, { passive: true });
   }
 
   const destroy = () => {
     if (raf) cancelAnimationFrame(raf);
     raf = 0;
-
-    if (env.isTouchDevice) {
-      window.removeEventListener("orientationchange", onOrientation);
+    if (vv) {
+      vv.removeEventListener("resize", onVVResize);
+      vv.removeEventListener("scroll", onVVScroll);
     } else {
-      if (vv) vv.removeEventListener("resize", onVVResize);
       window.removeEventListener("resize", onWinResize);
     }
   };
 
   return { sync, destroy };
-}
-
-/**
- * ✅ Pause loop while scrolling (touch devices)
- * Scroll causes viewport jitter + internal updates in many WebGL cursors.
- * This removes the “poblesavi” effect permanently.
- */
-function createScrollPause({ enabled, stop, start }) {
-  let tId = 0;
-  let running = true;
-
-  const onScroll = () => {
-    if (!enabled) return;
-
-    // stop immediately on scroll start
-    if (running) {
-      running = false;
-      stop();
-    }
-
-    // restart shortly after scroll ends
-    if (tId) clearTimeout(tId);
-    tId = setTimeout(() => {
-      tId = 0;
-      if (!running) {
-        running = true;
-        start();
-      }
-    }, 160);
-  };
-
-  const init = () => {
-    if (!enabled) return;
-    window.addEventListener("scroll", onScroll, { passive: true });
-    // some browsers scroll via touchmove without firing scroll instantly; add a lightweight touchmove hook
-    window.addEventListener("touchmove", onScroll, { passive: true });
-  };
-
-  const destroy = () => {
-    if (!enabled) return;
-    if (tId) clearTimeout(tId);
-    tId = 0;
-    window.removeEventListener("scroll", onScroll);
-    window.removeEventListener("touchmove", onScroll);
-  };
-
-  return { init, destroy };
 }
 
 function createFpsLoop({ fps, tick }) {
@@ -1625,10 +1521,8 @@ function createFpsLoop({ fps, tick }) {
   const loop = (t) => {
     if (!running) return;
     rafId = requestAnimationFrame(loop);
-
     if (t - lastT < frameInterval) return;
     lastT = t;
-
     tick(t);
   };
 
@@ -1652,10 +1546,72 @@ function clamp01(v) {
   return Math.max(0, Math.min(1, v));
 }
 
-/* ======================================================================
-   (Your other scripts can stay below: skills gauge, menu, etc.)
-   If you want, paste them back under this block unchanged.
-====================================================================== */
+/**
+ * ✅ Key fix: block finger tracking MOVE events globally (capture).
+ * - We DO NOT preventDefault → scrolling still works
+ * - We stopPropagation → tubes listener (usually bubble) never gets the move
+ */
+function blockGlobalFingerTrackingMoves() {
+  const isTouchPointer = (e) =>
+    e?.pointerType === "touch" ||
+    e?.type?.startsWith("touch") ||
+    (navigator.maxTouchPoints || 0) > 0;
+
+  const stop = (e) => {
+    if (!isTouchPointer(e)) return;
+    // Important: do NOT preventDefault, so scroll stays normal
+    e.stopPropagation();
+  };
+
+  // Capture phase so we kill it before the lib receives it
+  const opts = { capture: true, passive: true };
+
+  document.addEventListener("pointermove", stop, opts);
+  document.addEventListener("touchmove", stop, opts);
+
+  // Some libs also update on start; block those too (still allows taps because we don't preventDefault)
+  document.addEventListener("pointerdown", stop, opts);
+  document.addEventListener("touchstart", stop, opts);
+
+  return () => {
+    document.removeEventListener("pointermove", stop, opts);
+    document.removeEventListener("touchmove", stop, opts);
+    document.removeEventListener("pointerdown", stop, opts);
+    document.removeEventListener("touchstart", stop, opts);
+  };
+}
+
+/**
+ * Forces pointer uniforms to a stable position.
+ */
+function makePointerSetter(app) {
+  return (nx, ny) => {
+    nx = clamp01(nx);
+    ny = clamp01(ny);
+
+    try {
+      if (app?.pointer) {
+        app.pointer.x = nx;
+        app.pointer.y = ny;
+        return;
+      }
+      if (app?.mouse) {
+        app.mouse.x = nx;
+        app.mouse.y = ny;
+        return;
+      }
+      if (app?.params?.mouse) {
+        app.params.mouse.x = nx;
+        app.params.mouse.y = ny;
+        return;
+      }
+      if (app?.uniforms?.u_mouse?.value) {
+        app.uniforms.u_mouse.value.x = nx;
+        app.uniforms.u_mouse.value.y = ny;
+      }
+    } catch (_) {}
+  };
+}
 
 
 
