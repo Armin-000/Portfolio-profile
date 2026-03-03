@@ -1287,6 +1287,15 @@ gsap.to("[data-speed]", {
   },
 });
 
+/* ======================================================================
+   TUBES CANVAS BACKGROUND (PATCHED FOR PERFORMANCE)
+   - Single-mount guard (prevents double init)
+   - Lower lightsIntensity + FPS + DPR cap
+   - Render at smaller INTERNAL resolution (RENDER_SCALE) for big perf win
+   - Visibility pause
+   - No global EventTarget prototype override (safer)
+====================================================================== */
+
 document.addEventListener("DOMContentLoaded", () => {
   void initTubesBackground();
 });
@@ -1295,10 +1304,16 @@ async function initTubesBackground() {
   const host = document.getElementById("canvas");
   if (!host) return;
 
+  // ✅ Prevent double-mount (very common stutter cause)
+  if (host.dataset.tubesMounted === "1") return;
+  host.dataset.tubesMounted = "1";
+
+  // Respect reduced motion
   if (window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches) return;
 
   const env = getEnv();
 
+  // ✅ Safer defaults (tune if you want)
   const CONFIG = {
     importUrl:
       "https://cdn.jsdelivr.net/npm/threejs-components@0.0.19/build/cursors/tubes1.min.js",
@@ -1311,29 +1326,22 @@ async function initTubesBackground() {
       powerPreference: "low-power",
     },
 
+    // ✅ cheaper shading
     tubes: {
-      lightsIntensity: 18,
+      lightsIntensity: env.isMobile ? 7 : 11,
     },
 
-    fps: env.isMobile ? 24 : 30,
+    // ✅ less work per second
+    fps: env.isMobile ? 18 : 24,
 
-    dprCap: env.isMobile ? 0.5 : 0.65,
+    // ✅ fewer pixels
+    dprCap: env.isMobile ? 0.35 : 0.45,
+
+    // ✅ biggest win: render internally smaller, stretch via CSS
+    renderScale: env.isMobile ? 0.55 : 0.6,
 
     fixedPointerOnTouch: true,
     fixedPointer: { x: 0.5, y: 0.5 },
-
-    scrollIdleMs: 160,
-
-    blockedEventTypes: [
-      "touchstart",
-      "touchmove",
-      "touchend",
-      "touchcancel",
-      "pointerdown",
-      "pointermove",
-      "pointerup",
-      "pointercancel",
-    ],
   };
 
   const TubesCursor = await safeImportDefault(CONFIG.importUrl);
@@ -1341,26 +1349,22 @@ async function initTubesBackground() {
 
   lockBehind(host);
 
-  const app = env.isTouchDevice
-    ? withTemporarilyBlockedListeners(CONFIG.blockedEventTypes, () =>
-        createApp(TubesCursor, host, CONFIG),
-      )
-    : createApp(TubesCursor, host, CONFIG);
-
+  // ✅ No prototype hacks: just create the app
+  const app = createApp(TubesCursor, host, CONFIG);
   if (!app?.renderer) return;
 
   const renderer = app.renderer;
   const gl = renderer.domElement;
 
   renderer.setClearColor?.(0x000000, 0);
-
   lockBehind(gl);
 
   const viewport = createViewportController({
     renderer,
     dprCap: CONFIG.dprCap,
+    renderScale: CONFIG.renderScale,
   });
-  viewport.sync();
+  viewport.sync(true);
 
   const pointer = createPointerController({
     app,
@@ -1385,30 +1389,22 @@ async function initTubesBackground() {
   });
   loop.start();
 
+  // Pause when tab is hidden
   const onVisibility = () => (document.hidden ? loop.stop() : loop.start(true));
-  document.addEventListener("visibilitychange", onVisibility, {
-    passive: true,
-  });
+  document.addEventListener("visibilitychange", onVisibility, { passive: true });
 
-  let onScroll = null;
-  if (env.isTouchDevice) {
-    onScroll = createScrollPauseHandler({
-      onPause: () => loop.stop(),
-      onResume: () => loop.start(true),
-      onSync: () => viewport.sync(),
-      idleMs: CONFIG.scrollIdleMs,
-    });
-    window.addEventListener("scroll", onScroll, { passive: true });
-  }
+  // Optional: keep viewport in sync during resize
+  const onResize = () => viewport.sync();
+  window.addEventListener("resize", onResize, { passive: true });
 
-  // cleanup hook may be invoked externally (e.g. SPA unmount)
-  // eslint-disable-next-line no-unused-vars
-  const cleanup = () => {
+  // Cleanup hook (useful for SPA/unmount)
+  host.__tubesCleanup = () => {
     loop.stop();
     pointer.destroy();
     viewport.destroy();
     document.removeEventListener("visibilitychange", onVisibility);
-    if (onScroll) window.removeEventListener("scroll", onScroll);
+    window.removeEventListener("resize", onResize);
+    delete host.dataset.tubesMounted;
   };
 }
 
@@ -1460,30 +1456,7 @@ function lockBehind(el) {
   el.style.transform = "translateZ(0)";
 }
 
-function withTemporarilyBlockedListeners(blockedTypes, fn) {
-  const proto = globalThis.EventTarget?.prototype;
-  const add = proto?.addEventListener;
-  if (typeof add !== "function") return fn();
-
-  const blocked = new Set(blockedTypes);
-
-  proto.addEventListener = function (type, listener, options) {
-    try {
-      const t = String(type);
-      if (blocked.has(t) || t.startsWith("touch") || t.startsWith("pointer"))
-        return;
-    } catch (_) {}
-    return add.call(this, type, listener, options);
-  };
-
-  try {
-    return fn();
-  } finally {
-    proto.addEventListener = add;
-  }
-}
-
-function createViewportController({ renderer, dprCap }) {
+function createViewportController({ renderer, dprCap, renderScale = 0.6 }) {
   const vv = window.visualViewport || null;
   let raf = 0;
 
@@ -1495,18 +1468,41 @@ function createViewportController({ renderer, dprCap }) {
     return { w, h };
   };
 
-  const sync = () => {
+  const apply = () => {
     if (!renderer) return;
-    if (raf) return;
+    const { w, h } = getSize();
 
+    const baseDpr = Math.min(window.devicePixelRatio || 1, 2);
+    const dpr = baseDpr * dprCap;
+
+    // DPR clamp (keep some baseline clarity)
+    renderer.setPixelRatio(Math.max(0.35, Math.min(1, dpr)));
+
+    // ✅ Internal render size reduced (HUGE perf win)
+    const rw = Math.max(320, Math.floor(w * renderScale));
+    const rh = Math.max(240, Math.floor(h * renderScale));
+    renderer.setSize(rw, rh, false);
+
+    // Visual size stays fullscreen
+    const c = renderer.domElement;
+    c.style.width = "100vw";
+    c.style.height = "100vh";
+  };
+
+  const sync = (immediate = false) => {
+    if (!renderer) return;
+
+    if (immediate) {
+      if (raf) cancelAnimationFrame(raf);
+      raf = 0;
+      apply();
+      return;
+    }
+
+    if (raf) return;
     raf = requestAnimationFrame(() => {
       raf = 0;
-      const { w, h } = getSize();
-      const baseDpr = Math.min(window.devicePixelRatio || 1, 2);
-      const dpr = baseDpr * dprCap;
-
-      renderer.setPixelRatio(Math.max(0.5, Math.min(1, dpr)));
-      renderer.setSize(w, h, false);
+      apply();
     });
   };
 
@@ -1628,16 +1624,6 @@ function createFpsLoop({ fps, tick }) {
   };
 
   return { start, stop };
-}
-
-function createScrollPauseHandler({ onPause, onResume, onSync, idleMs }) {
-  let timer = 0;
-  return () => {
-    onPause?.();
-    onSync?.();
-    clearTimeout(timer);
-    timer = setTimeout(() => onResume?.(), idleMs);
-  };
 }
 
 function clamp01(v) {
@@ -1775,4 +1761,440 @@ document.addEventListener("DOMContentLoaded", () => {
 
     setTimeout(openProjectsSubmenu, 120);
   });
+})();
+
+
+
+/* ======================================================================
+   HXG — Optimized one-at-a-time gallery (smooth, no jank)
+   - Wheel -> horizontal (normalized + rAF accumulator + sensitivity)
+   - Pointer drag (capture)
+   - rAF-throttled scroll handling
+   - Snap-to-nearest after input ends (trackpad-aware)
+   - Progress bar update
+   - Active slide detection (binary search; fast, stable)
+   - Realistic typing (cancel-safe)
+   - Description height locked to maximum required height (no section shifting)
+   - Start typing only when section is in viewport (IntersectionObserver)
+   - Stable init (load + fonts.ready + ResizeObserver)
+====================================================================== */
+
+(function initHXG() {
+  const wrap = document.querySelector('[data-hxg]');
+  if (!wrap) return;
+
+  const rail = wrap.querySelector('.hxg-rail');
+  if (!rail) return;
+
+  const bar = document.querySelector('.hxg-progress__bar');
+  const descEl = document.getElementById('hxgDesc');
+  const cards = Array.from(rail.querySelectorAll('.hxg-card'));
+  if (!cards.length) return;
+
+  const reduce =
+    window.matchMedia &&
+    window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+
+  function maxScrollLeft() {
+    return Math.max(0, rail.scrollWidth - rail.clientWidth);
+  }
+
+  function updateProgress() {
+    if (!bar) return;
+    const max = maxScrollLeft();
+    const p = max <= 0 ? 1 : rail.scrollLeft / max;
+    bar.style.width = (clamp(p, 0, 1) * 100).toFixed(2) + '%';
+  }
+
+  function cardCenters() {
+    return cards.map((c) => c.offsetLeft + c.offsetWidth / 2);
+  }
+
+  let centers = cardCenters();
+
+  function nearestIndexByScroll() {
+    const cx = rail.scrollLeft + rail.clientWidth / 2;
+    const arr = centers;
+    const n = arr.length;
+    if (!n) return 0;
+
+    let lo = 0, hi = n - 1;
+    while (lo < hi) {
+      const mid = (lo + hi) >> 1;
+      if (arr[mid] < cx) lo = mid + 1;
+      else hi = mid;
+    }
+
+    const i = lo;
+    if (i <= 0) return 0;
+    if (i >= n) return n - 1;
+
+    const prev = i - 1;
+    return (Math.abs(arr[prev] - cx) <= Math.abs(arr[i] - cx)) ? prev : i;
+  }
+
+  function scrollToIndex(i, behavior = 'smooth') {
+    const c = cards[i];
+    if (!c) return;
+    const target = c.offsetLeft - (rail.clientWidth - c.offsetWidth) / 2;
+    rail.scrollTo({ left: target, behavior });
+  }
+
+  function createMeasureEl() {
+    if (!descEl) return null;
+    const m = document.createElement('div');
+    m.className = descEl.className;
+    m.style.position = 'absolute';
+    m.style.left = '-99999px';
+    m.style.top = '0';
+    m.style.visibility = 'hidden';
+    m.style.height = 'auto';
+    m.style.maxHeight = 'none';
+    m.style.overflow = 'visible';
+    m.style.transform = 'none';
+    m.style.filter = 'none';
+    m.style.opacity = '1';
+    m.style.pointerEvents = 'none';
+    m.style.whiteSpace = 'normal';
+    document.body.appendChild(m);
+    return m;
+  }
+
+  const measureEl = createMeasureEl();
+
+  function lockDescHeightToMax() {
+    if (!descEl || !measureEl) return;
+
+    const rect = descEl.getBoundingClientRect();
+    if (!rect.width) return;
+
+    measureEl.style.width = rect.width + 'px';
+
+    let maxH = 0;
+    for (const c of cards) {
+      const t = (c.getAttribute('data-desc') || '').trim();
+      if (!t) continue;
+      measureEl.textContent = t;
+      const h = measureEl.scrollHeight;
+      if (h > maxH) maxH = h;
+    }
+
+    if (!maxH) {
+      measureEl.textContent = (descEl.textContent || '').trim();
+      maxH = measureEl.scrollHeight || 0;
+    }
+
+    if (maxH) {
+      descEl.style.height = maxH + 'px';
+    }
+  }
+
+  let typingToken = 0;
+  let typingTimer = 0;
+
+  function stopTyping() {
+    typingToken++;
+    if (typingTimer) window.clearTimeout(typingTimer);
+    typingTimer = 0;
+  }
+
+  function setDescTyped(text) {
+    if (!descEl) return;
+
+    const next = (text || '').trim();
+    const current = descEl.getAttribute('data-full') || descEl.textContent.trim();
+    if (!next || current === next) return;
+
+    stopTyping();
+
+    descEl.setAttribute('data-full', next);
+
+    descEl.classList.add('is-enter');
+    requestAnimationFrame(() =>
+      requestAnimationFrame(() => descEl.classList.remove('is-enter'))
+    );
+
+    if (reduce) {
+      descEl.textContent = next;
+      return;
+    }
+
+    descEl.textContent = '';
+    const caret = document.createElement('span');
+    caret.className = 'hxg-caret';
+    caret.textContent = '▍';
+    descEl.appendChild(caret);
+
+    const myToken = typingToken;
+    let i = 0;
+    let out = '';
+
+    const baseMin = 18, baseMax = 42;
+    const thinkChance = 0.06;
+    const maxThinkPause = 180;
+
+    const rand = (a, b) => a + Math.random() * (b - a);
+
+    function charDelay(ch, prev) {
+      if (ch === ' ') return rand(10, 18);
+      if (',;:'.includes(ch)) return rand(90, 140);
+      if ('.!?'.includes(ch)) return rand(140, 220);
+      if (prev && '.!?'.includes(prev)) return rand(40, 80);
+      if (ch >= 'A' && ch <= 'Z') return rand(baseMin + 6, baseMax + 10);
+      if (ch >= '0' && ch <= '9') return rand(baseMin + 4, baseMax + 8);
+      return rand(baseMin, baseMax);
+    }
+
+    function maybeThinkPause(ch) {
+      const extra =
+        (',;:'.includes(ch) && Math.random() < 0.35) ||
+        (ch === ' ' && Math.random() < thinkChance);
+      return extra ? rand(80, maxThinkPause) : 0;
+    }
+
+    function render(t) {
+      descEl.textContent = t;
+      descEl.appendChild(caret);
+    }
+
+    function step(prev) {
+      if (myToken !== typingToken) return;
+
+      if (i >= next.length) {
+        render(out);
+        typingTimer = window.setTimeout(() => {
+          if (myToken !== typingToken) return;
+          descEl.textContent = out;
+          typingTimer = 0;
+        }, 520);
+        return;
+      }
+
+      const ch = next[i];
+      out += ch;
+      i++;
+      render(out);
+
+      typingTimer = window.setTimeout(
+        () => step(ch),
+        charDelay(ch, prev) + maybeThinkPause(ch)
+      );
+    }
+
+    typingTimer = window.setTimeout(() => step(''), rand(120, 220));
+  }
+
+  let activeIndex = -1;
+
+  let inView = false;
+  let started = false;
+
+  function setActiveIndex(i) {
+    if (i === activeIndex) return;
+    activeIndex = i;
+    if (!inView && started) return;
+    if (!started) return;
+    setDescTyped(cards[i]?.getAttribute('data-desc') || '');
+  }
+
+  function startHXG() {
+    if (started) return;
+    started = true;
+
+    lockDescHeightToMax();
+    updateProgress();
+
+    const i = nearestIndexByScroll();
+    activeIndex = -1;
+    setActiveIndex(i);
+  }
+
+  let rafPending = false;
+
+  function onScrollTick() {
+    rafPending = false;
+    updateProgress();
+    if (!started) return;
+    setActiveIndex(nearestIndexByScroll());
+  }
+
+  function onScroll() {
+    if (!rafPending) {
+      rafPending = true;
+      requestAnimationFrame(onScrollTick);
+    }
+  }
+
+  rail.addEventListener('scroll', onScroll, { passive: true });
+
+  let snapTimer = 0;
+
+  function scheduleSnap(delay = 140) {
+    if (reduce) return;
+    if (!started) return;
+    if (snapTimer) window.clearTimeout(snapTimer);
+    snapTimer = window.setTimeout(() => {
+      snapTimer = 0;
+      const i = nearestIndexByScroll();
+      scrollToIndex(i, 'smooth');
+    }, delay);
+  }
+
+  const WHEEL_SENSITIVITY_MOUSE = 1.15;
+  const WHEEL_SENSITIVITY_TRACKPAD = 1.0;
+
+  let wheelAccum = 0;
+  let wheelRaf = 0;
+  let lastWheelTrackpad = false;
+
+  function isLikelyTrackpad(e) {
+    const dx = Math.abs(e.deltaX || 0);
+    const dy = Math.abs(e.deltaY || 0);
+    const d = Math.max(dx, dy);
+    return d > 0 && d < 50;
+  }
+
+  function applyWheel() {
+    wheelRaf = 0;
+
+    const max = maxScrollLeft();
+    if (max <= 0) {
+      wheelAccum = 0;
+      return;
+    }
+
+    const next = clamp(rail.scrollLeft + wheelAccum, 0, max);
+    wheelAccum = 0;
+
+    rail.scrollLeft = next;
+
+    scheduleSnap(lastWheelTrackpad ? 180 : 120);
+  }
+
+  function onWheel(e) {
+    const max = maxScrollLeft();
+    if (max <= 0) return;
+
+    const dx = e.deltaX || 0;
+    const dy = e.deltaY || 0;
+
+    const useX = Math.abs(dx) > Math.abs(dy);
+    let delta = useX ? dx : dy;
+    if (!delta) return;
+
+    if (e.deltaMode === 1) delta *= 16;
+    if (e.deltaMode === 2) delta *= 80;
+
+    lastWheelTrackpad = isLikelyTrackpad(e);
+    const sens = lastWheelTrackpad ? WHEEL_SENSITIVITY_TRACKPAD : WHEEL_SENSITIVITY_MOUSE;
+    delta *= sens;
+
+    e.preventDefault();
+    stopTyping();
+
+    wheelAccum += delta;
+    if (!wheelRaf) wheelRaf = requestAnimationFrame(applyWheel);
+  }
+
+  rail.addEventListener('wheel', onWheel, { passive: false });
+
+  let dragging = false;
+  let startX = 0;
+  let startLeft = 0;
+  let dragId = 0;
+  let moved = 0;
+
+  function onPointerDown(e) {
+    if (e.pointerType === 'mouse' && e.button !== 0) return;
+
+    dragging = true;
+    dragId = e.pointerId;
+    moved = 0;
+    startX = e.clientX;
+    startLeft = rail.scrollLeft;
+
+    stopTyping();
+    rail.classList.add('hxg-dragging');
+    rail.setPointerCapture(dragId);
+  }
+
+  function onPointerMove(e) {
+    if (!dragging || e.pointerId !== dragId) return;
+    const dx = e.clientX - startX;
+    moved = Math.max(moved, Math.abs(dx));
+    const max = maxScrollLeft();
+    rail.scrollLeft = clamp(startLeft - dx, 0, max);
+  }
+
+  function onPointerUp(e) {
+    if (!dragging || e.pointerId !== dragId) return;
+    dragging = false;
+    rail.classList.remove('hxg-dragging');
+
+    try { rail.releasePointerCapture(dragId); } catch {}
+
+    if (moved > 6) scheduleSnap(140);
+  }
+
+  rail.addEventListener('pointerdown', onPointerDown, { passive: true });
+  rail.addEventListener('pointermove', onPointerMove, { passive: true });
+  rail.addEventListener('pointerup', onPointerUp, { passive: true });
+  rail.addEventListener('pointercancel', onPointerUp, { passive: true });
+
+  function onResize() {
+    centers = cardCenters();
+    updateProgress();
+    lockDescHeightToMax();
+    if (started) setActiveIndex(nearestIndexByScroll());
+  }
+
+  if ('ResizeObserver' in window) {
+    const ro = new ResizeObserver(onResize);
+    ro.observe(rail);
+  } else {
+    window.addEventListener('resize', onResize, { passive: true });
+  }
+
+  window.addEventListener('load', () => {
+    requestAnimationFrame(() => requestAnimationFrame(onResize));
+  }, { passive: true });
+
+  if (document.fonts && document.fonts.ready) {
+    document.fonts.ready.then(() => onResize()).catch(() => {});
+  }
+
+  const sectionEl = wrap.closest('.hxg-section') || wrap;
+
+  if ('IntersectionObserver' in window) {
+    const io = new IntersectionObserver(
+      (entries) => {
+        const e = entries[0];
+        inView = !!e.isIntersecting;
+
+        if (inView) {
+          startHXG();
+          requestAnimationFrame(() => {
+            centers = cardCenters();
+            lockDescHeightToMax();
+            updateProgress();
+            setActiveIndex(nearestIndexByScroll());
+          });
+        } else {
+          stopTyping();
+        }
+      },
+      {
+        root: null,
+        threshold: 0.35,
+        rootMargin: '0px 0px -10% 0px'
+      }
+    );
+
+    io.observe(sectionEl);
+  } else {
+    inView = true;
+    startHXG();
+  }
 })();

@@ -433,51 +433,13 @@ html.lenis body {
   position: relative;
   width: 100%;
   min-width: 360px;
-  padding-top: 8.5rem;
 }
 .mxd-section.padding-blog-default-pre-grid {
   padding-bottom: 3rem;
 }
-.mxd-section.padding-grid-pre-mtext {
-  padding-bottom: 11.3rem;
-}
-.mxd-section.padding-pinned-img-pre-mtext {
-  padding-bottom: 10.4rem;
-}
-@media only screen and (min-width: 768px) {
-  .mxd-section.padding-grid-pre-mtext {
-    padding-bottom: 10.4rem;
-  }
-  .mxd-section.padding-pinned-img-pre-mtext {
-    padding-bottom: 10rem;
-  }
-}
-@media only screen and (min-width: 1200px) {
-  .mxd-section.padding-blog-default-pre-grid {
-    padding-bottom: 9rem;
-  }
-  .mxd-section.padding-grid-pre-mtext {
-    padding-bottom: 10.4rem;
-  }
-  .mxd-section.padding-pinned-img-pre-mtext {
-    padding-bottom: 4.3rem;
-  }
-}
-@media only screen and (min-width: 1600px) {
-  .mxd-section.padding-blog-default-pre-grid {
-    padding-bottom: 11rem;
-  }
-  .mxd-section.padding-grid-pre-mtext {
-    padding-bottom: 14.4rem;
-  }
-  .mxd-section.padding-pinned-img-pre-mtext {
-    padding-bottom: 5.3rem;
-  }
-}
 
 @media only screen and (min-width: 768px) {
   .mxd-section-inner-headline {
-    padding-top: 15rem;
     min-height: 100vh;
     height: auto;
     display: flex;
@@ -486,7 +448,6 @@ html.lenis body {
 }
 @media only screen and (min-width: 1200px) {
   .mxd-section-inner-headline {
-    padding-top: 13.6rem;
     min-height: 100vh;
     height: auto;
     display: flex;
@@ -824,7 +785,7 @@ p.t-xsmall {
   line-height: 1.2;
 }
 p.t-small {
-  font-size: 1.6rem;
+  font-size: 1.8rem;
 }
 p.t-large {
   font-family: var(--_font-accent);
@@ -6869,4 +6830,242 @@ html[color-scheme="dark"] .mxd-logo__image {
 .snap-thumb i {
   font-size: 50px;
   opacity: 0.9;
+}
+
+
+/* ======================================================================
+   HXG — Horizontal Experience Gallery (isolated, premium)
+   - one-at-a-time snap slider
+   - wheel -> horizontal
+   - drag support
+   - progress bar
+   - dynamic typed description (fixed height to max content, no layout shift)
+   - mobile: text below image
+====================================================================== */
+
+.hxg-section { position: relative; }
+.hxg-block { position: relative; }
+
+.hxg-meta-row{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:16px;
+}
+
+@media (max-width: 575px){
+  .hxg-meta-row{
+    flex-direction:column;
+    align-items:flex-start;
+  }
+}
+
+.hxg-hint{
+  opacity:.8;
+  letter-spacing:.08em;
+  text-transform:uppercase;
+  white-space: nowrap;
+}
+
+.hxg-progress{
+  width: 220px;
+  height: 4px;
+  background: #424242;
+  border-radius: 999px;
+  overflow:hidden;
+}
+@media (max-width: 575px){
+  .hxg-progress{ width: 100%; }
+}
+
+.hxg-progress__bar{
+  display:block;
+  height:100%;
+  width: 0%;
+  background: #11cee3;
+  border-radius: 999px;
+  transform-origin:left center;
+  will-change: width;
+}
+
+.hxg-wrap{
+  position: relative;
+  border-radius: 18px;
+  overflow: hidden;
+  outline: 1px solid rgba(255,255,255,.08);
+  background: rgba(255,255,255,.03);
+  contain: layout paint;
+}
+
+.hxg-rail{
+  display:flex;
+  gap: 0;
+  overflow-x:auto;
+  overflow-y:hidden;
+  scroll-snap-type:x mandatory;
+  scroll-behavior:smooth;
+  -webkit-overflow-scrolling: touch;
+
+  padding: 0;
+  margin: 0;
+
+  scrollbar-width: none;
+
+  overscroll-behavior-x: contain;
+  scroll-snap-stop: always;
+  touch-action: pan-y;
+  will-change: scroll-position;
+}
+.hxg-rail::-webkit-scrollbar{ width:0; height:0; }
+
+.hxg-card{
+  flex: 0 0 100%;
+  width: 100%;
+  height: clamp(320px, 52vh, 560px);
+  scroll-snap-align: center;
+  border-radius: 16px;
+  position: relative;
+  overflow:hidden;
+  background: rgba(255,255,255,.06);
+  transform: translateZ(0);
+  transition: transform .45s cubic-bezier(.2,.8,.2,1);
+  contain: paint;
+}
+
+.hxg-card__link{
+  display:block;
+  width:100%;
+  height:100%;
+  position:relative;
+  text-decoration:none;
+  color: inherit;
+}
+
+.hxg-media{
+  position:absolute;
+  inset:0;
+  background-image: var(--bg);
+  background-size: cover;
+  background-position:center;
+  transform: scale(1.02);
+  filter: saturate(1.05) contrast(1.02);
+  will-change: transform;
+}
+
+.hxg-overlay{
+  position:absolute;
+  inset:0;
+  background:
+    radial-gradient(1200px 600px at 20% 10%, rgba(255,255,255,.10), transparent 45%),
+    linear-gradient(to top, rgba(0,0,0,.72), rgba(0,0,0,.05));
+  pointer-events:none;
+}
+
+.hxg-copy{
+  position:absolute;
+  left: 18px;
+  right: 18px;
+  bottom: 16px;
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+}
+
+.hxg-kicker{
+  font-size: 12px;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  opacity: .9;
+}
+
+.hxg-caption{
+  margin:0;
+  font-size: clamp(18px, 2.2vw, 26px);
+  letter-spacing: .10em;
+  text-transform: uppercase;
+  line-height: 1.1;
+}
+
+.hxg-rail.hxg-dragging{ cursor: grabbing; }
+.hxg-wrap [data-hxg]{ cursor: grab; }
+
+/* Description: fixed height is set by JS to max needed, so no section shifting */
+.hxg-desc{
+  margin-top: 3rem;
+  max-width: 46ch;
+
+  overflow: hidden;
+
+  position: relative;
+  opacity: 1;
+  transform: translateY(0);
+  filter: blur(0);
+  will-change: opacity, transform, filter;
+}
+
+/* enter state while changing */
+.hxg-desc.is-enter{
+  opacity: 0;
+  transform: translateY(6px);
+  filter: blur(6px);
+}
+
+/* caret */
+.hxg-desc .hxg-caret{
+  display:inline-block;
+  width:.65ch;
+  margin-left:.18ch;
+  opacity:.95;
+  transform: translateY(1px);
+  animation: hxgCaret 0.9s steps(1) infinite;
+}
+
+@keyframes hxgCaret{
+  50% { opacity: 0; }
+}
+
+@media (max-width: 767px){
+  .hxg-card{
+    height: auto;
+    background: rgba(255,255,255,.04);
+  }
+
+  .hxg-media{
+    position: relative;
+    height: 240px;
+    transform: none !important;
+    filter: none;
+  }
+
+  .hxg-overlay{
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to top, rgba(0,0,0,.55), rgba(0,0,0,.08));
+  }
+
+  .hxg-copy{
+    position: relative;
+    left: auto;
+    right: auto;
+    bottom: auto;
+    padding: 14px 14px 16px;
+    background: rgba(0,0,0,.35);
+    backdrop-filter: blur(10px);
+    border-top: 1px solid rgba(255,255,255,.08);
+  }
+
+  .hxg-caption{ letter-spacing: .08em; }
+}
+
+@media (prefers-reduced-motion: reduce){
+  .hxg-rail{ scroll-behavior:auto; }
+  .hxg-card, .hxg-media{ transition:none !important; }
+  .hxg-desc{ filter:none !important; transform:none !important; }
+  .hxg-desc .hxg-caret{ animation: none; }
+}
+
+@media (max-width: 767px){
+  .hxg-block .mxd-project__subtitle{
+    padding-bottom: 18px;
+  }
 }
