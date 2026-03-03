@@ -1297,13 +1297,15 @@ if (parallaxElements.length) {
 
 
 /* ======================================================================
-   TUBES CANVAS BACKGROUND (PATCHED FOR PERFORMANCE + NO TOUCH REACTION)
-   - Single-mount guard (prevents double init)
-   - Lower lightsIntensity + FPS + DPR cap
-   - Render at smaller INTERNAL resolution (RENDER_SCALE) for big perf win
+   TUBES CANVAS BACKGROUND (MOBILE SAFE: NO TOUCH REACTION + NO SCROLL FREAKOUT)
+   - Single-mount guard
+   - Perf caps (FPS, DPR, internal renderScale)
+   - ✅ On touch devices:
+       - pointer is FIXED (never follows finger)
+       - hard-block touch/pointer/wheel input on the canvas element
+       - ✅ DO NOT listen to visualViewport.scroll (major cause of “goes crazy while scrolling”)
+       - resize sync is debounced (prevents resize thrash)
    - Visibility pause
-   - ✅ HARD DISABLE touch/pointer/wheel input on mobile/tablet (no scroll freakout)
-   - No global EventTarget prototype override (safer)
 ====================================================================== */
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -1314,7 +1316,7 @@ async function initTubesBackground() {
   const host = document.getElementById("canvas");
   if (!host) return;
 
-  // ✅ Prevent double-mount (very common stutter cause)
+  // Prevent double-mount
   if (host.dataset.tubesMounted === "1") return;
   host.dataset.tubesMounted = "1";
 
@@ -1323,7 +1325,6 @@ async function initTubesBackground() {
 
   const env = getEnv();
 
-  // ✅ Safer defaults (tune if you want)
   const CONFIG = {
     importUrl:
       "https://cdn.jsdelivr.net/npm/threejs-components@0.0.19/build/cursors/tubes1.min.js",
@@ -1336,20 +1337,15 @@ async function initTubesBackground() {
       powerPreference: "low-power",
     },
 
-    // ✅ cheaper shading
     tubes: {
       lightsIntensity: env.isMobile ? 7 : 11,
     },
 
-    // ✅ less work per second
     fps: env.isMobile ? 18 : 24,
-
-    // ✅ fewer pixels
     dprCap: env.isMobile ? 0.35 : 0.45,
-
-    // ✅ biggest win: render internally smaller, stretch via CSS
     renderScale: env.isMobile ? 0.55 : 0.6,
 
+    // Touch behavior: fixed pointer only (no reaction)
     fixedPointerOnTouch: true,
     fixedPointer: { x: 0.5, y: 0.5 },
   };
@@ -1359,7 +1355,6 @@ async function initTubesBackground() {
 
   lockBehind(host);
 
-  // ✅ No prototype hacks: just create the app
   const app = createApp(TubesCursor, host, CONFIG);
   if (!app?.renderer) return;
 
@@ -1369,20 +1364,23 @@ async function initTubesBackground() {
   renderer.setClearColor?.(0x000000, 0);
   lockBehind(gl);
 
-  // ✅ HARD: on touch devices, canvas must NOT react to scroll/touch/pointer/wheel
-  // This prevents the “canvas goes crazy while scrolling” problem.
-  let killCanvasInput = null;
-  if (env.isTouchDevice) {
-    killCanvasInput = hardDisableCanvasInput(gl);
-  }
+  // ✅ Hard-disable any input on the actual canvas element (touch/pointer/wheel)
+  // This ensures finger movement/scroll gestures never affect it.
+  const killCanvasInput = hardDisableCanvasInput(gl);
 
+  // ✅ Viewport controller:
+  // On touch devices we DO NOT listen to visualViewport.scroll (address bar jitter causes chaos).
   const viewport = createViewportController({
     renderer,
     dprCap: CONFIG.dprCap,
     renderScale: CONFIG.renderScale,
+    listenVVScroll: !env.isTouchDevice, // ✅ IMPORTANT
+    debounceMs: env.isTouchDevice ? 120 : 0, // ✅ reduce resize thrash on mobile
   });
   viewport.sync(true);
 
+  // ✅ Pointer controller:
+  // On touch: do not attach listeners; set pointer once to fixed center.
   const pointer = createPointerController({
     app,
     env,
@@ -1391,7 +1389,6 @@ async function initTubesBackground() {
     fixedOnTouch: CONFIG.fixedPointerOnTouch,
   });
 
-  // ✅ On touch: do NOT attach pointer listeners; just set a stable fixed pointer ONCE
   if (env.isTouchDevice) {
     if (CONFIG.fixedPointerOnTouch) {
       pointer.setNormalized(CONFIG.fixedPointer.x, CONFIG.fixedPointer.y);
@@ -1403,10 +1400,10 @@ async function initTubesBackground() {
   const renderFn = app.render || app.update;
   if (typeof renderFn !== "function") return;
 
-  // ✅ On touch we also avoid re-setting pointer every frame (stability)
   const loop = createFpsLoop({
     fps: CONFIG.fps,
     tick: (t) => {
+      // Touch: DO NOT update pointer per-frame
       renderFn(t);
     },
   });
@@ -1416,11 +1413,11 @@ async function initTubesBackground() {
   const onVisibility = () => (document.hidden ? loop.stop() : loop.start(true));
   document.addEventListener("visibilitychange", onVisibility, { passive: true });
 
-  // Optional: keep viewport in sync during resize
+  // Resize sync (debounced inside viewport controller)
   const onResize = () => viewport.sync();
   window.addEventListener("resize", onResize, { passive: true });
 
-  // Cleanup hook (useful for SPA/unmount)
+  // Cleanup hook
   host.__tubesCleanup = () => {
     loop.stop();
     pointer.destroy();
@@ -1481,13 +1478,13 @@ function lockBehind(el) {
 }
 
 /**
- * ✅ HARD DISABLE all input on the actual canvas element
- * Fixes mobile/tablet “scroll makes canvas freak out” issues.
+ * ✅ Hard-disable input events on canvas.
+ * Even if some browser tries to send events over the element, they die here.
  */
 function hardDisableCanvasInput(el) {
   if (!el) return () => {};
 
-  // Make sure it never captures gestures
+  // Extra safety for mobile gesture handling
   el.style.pointerEvents = "none";
   el.style.touchAction = "none";
 
@@ -1496,22 +1493,18 @@ function hardDisableCanvasInput(el) {
     e.stopPropagation();
   };
 
-  // passive:false is required so preventDefault works on iOS/Android
   const opts = { passive: false, capture: true };
 
-  // Touch
   el.addEventListener("touchstart", kill, opts);
   el.addEventListener("touchmove", kill, opts);
   el.addEventListener("touchend", kill, opts);
   el.addEventListener("touchcancel", kill, opts);
 
-  // Pointer
   el.addEventListener("pointerdown", kill, opts);
   el.addEventListener("pointermove", kill, opts);
   el.addEventListener("pointerup", kill, opts);
   el.addEventListener("pointercancel", kill, opts);
 
-  // Some browsers dispatch wheel over elements (tablets/trackpads)
   el.addEventListener("wheel", kill, opts);
 
   return () => {
@@ -1529,9 +1522,23 @@ function hardDisableCanvasInput(el) {
   };
 }
 
-function createViewportController({ renderer, dprCap, renderScale = 0.6 }) {
+/**
+ * Viewport controller
+ * ✅ Key: on mobile/touch ignore visualViewport.scroll to avoid address bar jitter chaos.
+ * ✅ Debounced sync on touch reduces resize thrash.
+ */
+function createViewportController({
+  renderer,
+  dprCap,
+  renderScale = 0.6,
+  listenVVScroll = false,
+  debounceMs = 0,
+}) {
   const vv = window.visualViewport || null;
   let raf = 0;
+
+  // Debounce timer (mobile)
+  let tId = 0;
 
   const getSize = () => {
     const w = vv ? Math.round(vv.width) : document.documentElement.clientWidth;
@@ -1547,36 +1554,47 @@ function createViewportController({ renderer, dprCap, renderScale = 0.6 }) {
 
     const baseDpr = Math.min(window.devicePixelRatio || 1, 2);
     const dpr = baseDpr * dprCap;
-
-    // DPR clamp (keep some baseline clarity)
     renderer.setPixelRatio(Math.max(0.35, Math.min(1, dpr)));
 
-    // ✅ Internal render size reduced (HUGE perf win)
     const rw = Math.max(320, Math.floor(w * renderScale));
     const rh = Math.max(240, Math.floor(h * renderScale));
     renderer.setSize(rw, rh, false);
 
-    // Visual size stays fullscreen
     const c = renderer.domElement;
     c.style.width = "100vw";
     c.style.height = "100vh";
+  };
+
+  const scheduleApply = () => {
+    if (raf) return;
+    raf = requestAnimationFrame(() => {
+      raf = 0;
+      apply();
+    });
   };
 
   const sync = (immediate = false) => {
     if (!renderer) return;
 
     if (immediate) {
+      if (tId) clearTimeout(tId);
+      tId = 0;
       if (raf) cancelAnimationFrame(raf);
       raf = 0;
       apply();
       return;
     }
 
-    if (raf) return;
-    raf = requestAnimationFrame(() => {
-      raf = 0;
-      apply();
-    });
+    if (debounceMs > 0) {
+      if (tId) clearTimeout(tId);
+      tId = setTimeout(() => {
+        tId = 0;
+        scheduleApply();
+      }, debounceMs);
+      return;
+    }
+
+    scheduleApply();
   };
 
   const onVVResize = () => sync();
@@ -1585,14 +1603,17 @@ function createViewportController({ renderer, dprCap, renderScale = 0.6 }) {
 
   if (vv) {
     vv.addEventListener("resize", onVVResize, { passive: true });
-    vv.addEventListener("scroll", onVVScroll, { passive: true });
+    if (listenVVScroll) vv.addEventListener("scroll", onVVScroll, { passive: true });
   } else {
     window.addEventListener("resize", onWinResize, { passive: true });
   }
 
   const destroy = () => {
+    if (tId) clearTimeout(tId);
+    tId = 0;
     if (raf) cancelAnimationFrame(raf);
     raf = 0;
+
     if (vv) {
       vv.removeEventListener("resize", onVVResize);
       vv.removeEventListener("scroll", onVVScroll);
@@ -1641,7 +1662,7 @@ function createPointerController({
   };
 
   const init = () => {
-    // ✅ Touch: no listeners at all
+    // Touch: no listeners
     if (env.isTouchDevice) {
       if (fixedOnTouch) setNormalized(fixedPointer.x, fixedPointer.y);
       return;
@@ -1780,10 +1801,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
       });
     },
-    {
-      threshold: 0.35,
-      rootMargin: "0px 0px -10% 0px",
-    },
+    { threshold: 0.35, rootMargin: "0px 0px -10% 0px" },
   );
 
   cards.forEach((card) => {
@@ -1818,10 +1836,7 @@ document.addEventListener("DOMContentLoaded", () => {
     document.querySelectorAll(".main-menu__link.btn.btn-anim"),
   ).find((el) => (el.textContent || "").trim().toLowerCase() === "my projects");
 
-  const openHamburger = () => {
-    if (!burger) return;
-    burger.click();
-  };
+  const openHamburger = () => burger?.click();
 
   const openProjectsSubmenu = () => {
     if (!projectsToggle) return;
