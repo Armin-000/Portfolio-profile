@@ -61,9 +61,7 @@
 /* global gsap, ScrollTrigger, Flip, imagesLoaded, Lenis, Typed, Modernizr, $, Ukiyo, SplitType, Swiper, SVGInjector */
 /* exported optionsNormal, optionsDecimal, optionsDecimalTwo, optionsPercent, optionsK, optionsPlus */
 
-if (window.gsap) {
-  gsap.config({ nullTargetWarn: false });
-}
+
 
 gsap.registerPlugin(ScrollTrigger);
 gsap.registerPlugin(Flip);
