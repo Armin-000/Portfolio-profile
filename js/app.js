@@ -61,7 +61,9 @@
 /* global gsap, ScrollTrigger, Flip, imagesLoaded, Lenis, Typed, Modernizr, $, Ukiyo, SplitType, Swiper, SVGInjector */
 /* exported optionsNormal, optionsDecimal, optionsDecimalTwo, optionsPercent, optionsK, optionsPlus */
 
-
+if (window.gsap) {
+  gsap.config({ nullTargetWarn: false });
+}
 
 gsap.registerPlugin(ScrollTrigger);
 gsap.registerPlugin(Flip);
@@ -1295,11 +1297,12 @@ if (parallaxElements.length) {
 
 
 /* ======================================================================
-   TUBES CANVAS BACKGROUND (PATCHED FOR PERFORMANCE)
+   TUBES CANVAS BACKGROUND (PATCHED FOR PERFORMANCE + NO TOUCH REACTION)
    - Single-mount guard (prevents double init)
    - Lower lightsIntensity + FPS + DPR cap
    - Render at smaller INTERNAL resolution (RENDER_SCALE) for big perf win
    - Visibility pause
+   - ✅ HARD DISABLE touch/pointer/wheel input on mobile/tablet (no scroll freakout)
    - No global EventTarget prototype override (safer)
 ====================================================================== */
 
@@ -1366,6 +1369,13 @@ async function initTubesBackground() {
   renderer.setClearColor?.(0x000000, 0);
   lockBehind(gl);
 
+  // ✅ HARD: on touch devices, canvas must NOT react to scroll/touch/pointer/wheel
+  // This prevents the “canvas goes crazy while scrolling” problem.
+  let killCanvasInput = null;
+  if (env.isTouchDevice) {
+    killCanvasInput = hardDisableCanvasInput(gl);
+  }
+
   const viewport = createViewportController({
     renderer,
     dprCap: CONFIG.dprCap,
@@ -1380,17 +1390,23 @@ async function initTubesBackground() {
     fixedPointer: CONFIG.fixedPointer,
     fixedOnTouch: CONFIG.fixedPointerOnTouch,
   });
-  pointer.init();
+
+  // ✅ On touch: do NOT attach pointer listeners; just set a stable fixed pointer ONCE
+  if (env.isTouchDevice) {
+    if (CONFIG.fixedPointerOnTouch) {
+      pointer.setNormalized(CONFIG.fixedPointer.x, CONFIG.fixedPointer.y);
+    }
+  } else {
+    pointer.init();
+  }
 
   const renderFn = app.render || app.update;
   if (typeof renderFn !== "function") return;
 
+  // ✅ On touch we also avoid re-setting pointer every frame (stability)
   const loop = createFpsLoop({
     fps: CONFIG.fps,
     tick: (t) => {
-      if (env.isTouchDevice && CONFIG.fixedPointerOnTouch) {
-        pointer.setNormalized(CONFIG.fixedPointer.x, CONFIG.fixedPointer.y);
-      }
       renderFn(t);
     },
   });
@@ -1409,6 +1425,7 @@ async function initTubesBackground() {
     loop.stop();
     pointer.destroy();
     viewport.destroy();
+    killCanvasInput?.();
     document.removeEventListener("visibilitychange", onVisibility);
     window.removeEventListener("resize", onResize);
     delete host.dataset.tubesMounted;
@@ -1461,6 +1478,55 @@ function lockBehind(el) {
   el.style.background = "transparent";
   el.style.zIndex = "-1";
   el.style.transform = "translateZ(0)";
+}
+
+/**
+ * ✅ HARD DISABLE all input on the actual canvas element
+ * Fixes mobile/tablet “scroll makes canvas freak out” issues.
+ */
+function hardDisableCanvasInput(el) {
+  if (!el) return () => {};
+
+  // Make sure it never captures gestures
+  el.style.pointerEvents = "none";
+  el.style.touchAction = "none";
+
+  const kill = (e) => {
+    if (e.cancelable) e.preventDefault();
+    e.stopPropagation();
+  };
+
+  // passive:false is required so preventDefault works on iOS/Android
+  const opts = { passive: false, capture: true };
+
+  // Touch
+  el.addEventListener("touchstart", kill, opts);
+  el.addEventListener("touchmove", kill, opts);
+  el.addEventListener("touchend", kill, opts);
+  el.addEventListener("touchcancel", kill, opts);
+
+  // Pointer
+  el.addEventListener("pointerdown", kill, opts);
+  el.addEventListener("pointermove", kill, opts);
+  el.addEventListener("pointerup", kill, opts);
+  el.addEventListener("pointercancel", kill, opts);
+
+  // Some browsers dispatch wheel over elements (tablets/trackpads)
+  el.addEventListener("wheel", kill, opts);
+
+  return () => {
+    el.removeEventListener("touchstart", kill, opts);
+    el.removeEventListener("touchmove", kill, opts);
+    el.removeEventListener("touchend", kill, opts);
+    el.removeEventListener("touchcancel", kill, opts);
+
+    el.removeEventListener("pointerdown", kill, opts);
+    el.removeEventListener("pointermove", kill, opts);
+    el.removeEventListener("pointerup", kill, opts);
+    el.removeEventListener("pointercancel", kill, opts);
+
+    el.removeEventListener("wheel", kill, opts);
+  };
 }
 
 function createViewportController({ renderer, dprCap, renderScale = 0.6 }) {
@@ -1575,6 +1641,7 @@ function createPointerController({
   };
 
   const init = () => {
+    // ✅ Touch: no listeners at all
     if (env.isTouchDevice) {
       if (fixedOnTouch) setNormalized(fixedPointer.x, fixedPointer.y);
       return;
@@ -1637,6 +1704,10 @@ function clamp01(v) {
   return Math.max(0, Math.min(1, v));
 }
 
+/* ======================================================================
+   SKILLS GAUGE ANIMATIONS
+====================================================================== */
+
 document.addEventListener("DOMContentLoaded", () => {
   const section = document.querySelector("#skills.awSkillDeck");
   if (!section) return;
@@ -1694,8 +1765,6 @@ document.addEventListener("DOMContentLoaded", () => {
     d.raf = requestAnimationFrame(tick);
   }
 
-  const seen = new WeakSet();
-
   const cardIO = new IntersectionObserver(
     (entries) => {
       entries.forEach((e) => {
@@ -1705,9 +1774,7 @@ document.addEventListener("DOMContentLoaded", () => {
         if (e.isIntersecting) {
           card.style.opacity = "1";
           card.style.transform = "translateY(0)";
-
           animateTo(card, card._aw.level, 950);
-          seen.add(card);
         } else {
           animateTo(card, 0, 650);
         }
@@ -1723,7 +1790,6 @@ document.addEventListener("DOMContentLoaded", () => {
     card.style.opacity = "0";
     card.style.transform = "translateY(10px)";
     card.style.transition = "opacity .45s ease, transform .45s ease";
-
     cardIO.observe(card);
   });
 
@@ -1737,6 +1803,10 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }, 900);
 });
+
+/* ======================================================================
+   PROJECTS MENU BUTTON (opens hamburger + submenu)
+====================================================================== */
 
 (function () {
   const btn = document.getElementById("openProjectsMenu");
@@ -1755,17 +1825,13 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const openProjectsSubmenu = () => {
     if (!projectsToggle) return;
-
     projectsToggle.click();
-
     projectsToggle.scrollIntoView({ behavior: "smooth", block: "center" });
   };
 
   btn.addEventListener("click", (e) => {
     e.preventDefault();
-
     openHamburger();
-
     setTimeout(openProjectsSubmenu, 120);
   });
 })();
