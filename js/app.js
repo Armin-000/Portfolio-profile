@@ -1554,10 +1554,8 @@ function installTouchMoveShield() {
   const targets = [window, document, document.documentElement];
 
   targets.forEach((t) => {
-    t.addEventListener("pointermove", stopIfTouch, opts);
-    t.addEventListener("pointerdown", stopIfTouch, opts);
-    t.addEventListener("touchmove", stopIfTouch, opts);
-    t.addEventListener("touchstart", stopIfTouch, opts);
+      t.addEventListener("pointermove", stopIfTouch, opts);
+      t.addEventListener("touchmove", stopIfTouch, opts);
   });
 
   return () => {
