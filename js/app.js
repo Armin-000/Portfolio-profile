@@ -1297,10 +1297,12 @@ if (parallaxElements.length) {
 
 
 /* ======================================================================
-   TUBES CANVAS BACKGROUND — FINAL FIX (NO FINGER TRACKING)
-   ✅ Blocks touch/pointer MOVE events globally BEFORE tubes registers listeners
-   ✅ Uses CAPTURE + stopImmediatePropagation (beats libs that listen globally)
-   ✅ Does NOT break scroll (no preventDefault)
+   TUBES CANVAS BACKGROUND (PATCHED FOR PERFORMANCE)
+   - Single-mount guard (prevents double init)
+   - Lower lightsIntensity + FPS + DPR cap
+   - Render at smaller INTERNAL resolution (RENDER_SCALE) for big perf win
+   - Visibility pause
+   - No global EventTarget prototype override (safer)
 ====================================================================== */
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -1311,30 +1313,44 @@ async function initTubesBackground() {
   const host = document.getElementById("canvas");
   if (!host) return;
 
-  // Prevent double-mount
+  // ✅ Prevent double-mount (very common stutter cause)
   if (host.dataset.tubesMounted === "1") return;
   host.dataset.tubesMounted = "1";
 
+  // Respect reduced motion
   if (window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches) return;
 
   const env = getEnv();
 
-  // ✅ IMPORTANT: install shield BEFORE importing/creating TubesCursor
-  // This ensures our capture listeners run before the library’s listeners exist.
-  let removeShield = null;
-  if (env.isTouchDevice) {
-    removeShield = installTouchMoveShield();
-  }
-
+  // ✅ Safer defaults (tune if you want)
   const CONFIG = {
     importUrl:
       "https://cdn.jsdelivr.net/npm/threejs-components@0.0.19/build/cursors/tubes1.min.js",
+
     colors: ["#11cee3", "#058391", "#006e7a", "#017380"],
-    renderer: { alpha: true, antialias: false, powerPreference: "low-power" },
-    tubes: { lightsIntensity: env.isMobile ? 7 : 11 },
+
+    renderer: {
+      alpha: true,
+      antialias: false,
+      powerPreference: "low-power",
+    },
+
+    // ✅ cheaper shading
+    tubes: {
+      lightsIntensity: env.isMobile ? 7 : 11,
+    },
+
+    // ✅ less work per second
     fps: env.isMobile ? 18 : 24,
+
+    // ✅ fewer pixels
     dprCap: env.isMobile ? 0.35 : 0.45,
+
+    // ✅ biggest win: render internally smaller, stretch via CSS
     renderScale: env.isMobile ? 0.55 : 0.6,
+
+    fixedPointerOnTouch: true,
+    fixedPointer: { x: 0.5, y: 0.5 },
   };
 
   const TubesCursor = await safeImportDefault(CONFIG.importUrl);
@@ -1342,6 +1358,7 @@ async function initTubesBackground() {
 
   lockBehind(host);
 
+  // ✅ No prototype hacks: just create the app
   const app = createApp(TubesCursor, host, CONFIG);
   if (!app?.renderer) return;
 
@@ -1358,25 +1375,42 @@ async function initTubesBackground() {
   });
   viewport.sync(true);
 
+  const pointer = createPointerController({
+    app,
+    env,
+    getViewportSize: viewport.getSize,
+    fixedPointer: CONFIG.fixedPointer,
+    fixedOnTouch: CONFIG.fixedPointerOnTouch,
+  });
+  pointer.init();
+
   const renderFn = app.render || app.update;
   if (typeof renderFn !== "function") return;
 
   const loop = createFpsLoop({
     fps: CONFIG.fps,
-    tick: (t) => renderFn(t),
+    tick: (t) => {
+      if (env.isTouchDevice && CONFIG.fixedPointerOnTouch) {
+        pointer.setNormalized(CONFIG.fixedPointer.x, CONFIG.fixedPointer.y);
+      }
+      renderFn(t);
+    },
   });
   loop.start();
 
+  // Pause when tab is hidden
   const onVisibility = () => (document.hidden ? loop.stop() : loop.start(true));
   document.addEventListener("visibilitychange", onVisibility, { passive: true });
 
+  // Optional: keep viewport in sync during resize
   const onResize = () => viewport.sync();
   window.addEventListener("resize", onResize, { passive: true });
 
+  // Cleanup hook (useful for SPA/unmount)
   host.__tubesCleanup = () => {
     loop.stop();
+    pointer.destroy();
     viewport.destroy();
-    removeShield?.();
     document.removeEventListener("visibilitychange", onVisibility);
     window.removeEventListener("resize", onResize);
     delete host.dataset.tubesMounted;
@@ -1410,7 +1444,10 @@ function createApp(TubesCursor, host, CONFIG) {
     renderer: CONFIG.renderer,
     tubes: {
       colors: CONFIG.colors,
-      lights: { intensity: CONFIG.tubes.lightsIntensity, colors: CONFIG.colors },
+      lights: {
+        intensity: CONFIG.tubes.lightsIntensity,
+        colors: CONFIG.colors,
+      },
     },
   });
 }
@@ -1434,7 +1471,9 @@ function createViewportController({ renderer, dprCap, renderScale = 0.6 }) {
 
   const getSize = () => {
     const w = vv ? Math.round(vv.width) : document.documentElement.clientWidth;
-    const h = vv ? Math.round(vv.height) : document.documentElement.clientHeight;
+    const h = vv
+      ? Math.round(vv.height)
+      : document.documentElement.clientHeight;
     return { w, h };
   };
 
@@ -1444,12 +1483,16 @@ function createViewportController({ renderer, dprCap, renderScale = 0.6 }) {
 
     const baseDpr = Math.min(window.devicePixelRatio || 1, 2);
     const dpr = baseDpr * dprCap;
+
+    // DPR clamp (keep some baseline clarity)
     renderer.setPixelRatio(Math.max(0.35, Math.min(1, dpr)));
 
+    // ✅ Internal render size reduced (HUGE perf win)
     const rw = Math.max(320, Math.floor(w * renderScale));
     const rh = Math.max(240, Math.floor(h * renderScale));
     renderer.setSize(rw, rh, false);
 
+    // Visual size stays fullscreen
     const c = renderer.domElement;
     c.style.width = "100vw";
     c.style.height = "100vh";
@@ -1457,12 +1500,14 @@ function createViewportController({ renderer, dprCap, renderScale = 0.6 }) {
 
   const sync = (immediate = false) => {
     if (!renderer) return;
+
     if (immediate) {
       if (raf) cancelAnimationFrame(raf);
       raf = 0;
       apply();
       return;
     }
+
     if (raf) return;
     raf = requestAnimationFrame(() => {
       raf = 0;
@@ -1492,7 +1537,70 @@ function createViewportController({ renderer, dprCap, renderScale = 0.6 }) {
     }
   };
 
-  return { sync, destroy };
+  return { getSize, sync, destroy };
+}
+
+function createPointerController({
+  app,
+  env,
+  getViewportSize,
+  fixedPointer,
+  fixedOnTouch,
+}) {
+  let onMove = null;
+
+  const setNormalized = (nx, ny) => {
+    nx = clamp01(nx);
+    ny = clamp01(ny);
+
+    try {
+      if (app?.pointer) {
+        app.pointer.x = nx;
+        app.pointer.y = ny;
+        return;
+      }
+      if (app?.mouse) {
+        app.mouse.x = nx;
+        app.mouse.y = ny;
+        return;
+      }
+      if (app?.params?.mouse) {
+        app.params.mouse.x = nx;
+        app.params.mouse.y = ny;
+        return;
+      }
+      if (app?.uniforms?.u_mouse?.value) {
+        app.uniforms.u_mouse.value.x = nx;
+        app.uniforms.u_mouse.value.y = ny;
+      }
+    } catch (_) {}
+  };
+
+  const init = () => {
+    if (env.isTouchDevice) {
+      if (fixedOnTouch) setNormalized(fixedPointer.x, fixedPointer.y);
+      return;
+    }
+
+    onMove = (e) => {
+      if (e.pointerType && e.pointerType !== "mouse" && e.pointerType !== "pen")
+        return;
+
+      const { w, h } = getViewportSize();
+      if (!w || !h) return;
+
+      setNormalized(e.clientX / w, e.clientY / h);
+    };
+
+    window.addEventListener("pointermove", onMove, { passive: true });
+  };
+
+  const destroy = () => {
+    if (onMove) window.removeEventListener("pointermove", onMove);
+    onMove = null;
+  };
+
+  return { init, destroy, setNormalized };
 }
 
 function createFpsLoop({ fps, tick }) {
@@ -1504,8 +1612,10 @@ function createFpsLoop({ fps, tick }) {
   const loop = (t) => {
     if (!running) return;
     rafId = requestAnimationFrame(loop);
+
     if (t - lastT < frameInterval) return;
     lastT = t;
+
     tick(t);
   };
 
@@ -1525,48 +1635,142 @@ function createFpsLoop({ fps, tick }) {
   return { start, stop };
 }
 
-/**
- * ✅ THE FIX:
- * Block touch/pointer MOVE globally using CAPTURE + stopImmediatePropagation().
- * We DO NOT preventDefault → page scroll stays normal.
- *
- * This must be installed BEFORE TubesCursor is created (we do that).
- */
-function installTouchMoveShield() {
-  const opts = { capture: true, passive: true };
+function clamp01(v) {
+  return Math.max(0, Math.min(1, v));
+}
 
-  const stopIfTouch = (e) => {
-    // PointerEvents path
-    if (e.type === "pointermove" || e.type === "pointerdown") {
-      if (e.pointerType === "touch") {
-        e.stopImmediatePropagation();
-      }
-      return;
-    }
+document.addEventListener("DOMContentLoaded", () => {
+  const section = document.querySelector("#skills.awSkillDeck");
+  if (!section) return;
 
-    // TouchEvents path
-    if (e.type === "touchmove" || e.type === "touchstart") {
-      e.stopImmediatePropagation();
-    }
-  };
+  const cards = Array.from(section.querySelectorAll(".awSkillCard"));
 
-  // Register on multiple targets to catch whatever the library uses
-  const targets = [window, document, document.documentElement];
+  section.classList.add("is-ready");
 
-  targets.forEach((t) => {
-      t.addEventListener("pointermove", stopIfTouch, opts);
-      t.addEventListener("touchmove", stopIfTouch, opts);
+  cards.forEach((card) => {
+    const level = Math.max(0, Math.min(100, Number(card.dataset.level || 0)));
+    const bar = card.querySelector(".awGauge__bar");
+    const glow = card.querySelector(".awGauge__glow");
+    const count = card.querySelector(".awCount");
+    if (!bar || !glow || !count) return;
+
+    const r = 46;
+    const C = 2 * Math.PI * r;
+
+    bar.style.strokeDasharray = `0 ${C}`;
+    glow.style.strokeDasharray = `0 ${C}`;
+    count.textContent = "0";
+
+    card._aw = { level, C, bar, glow, count, current: 0, raf: 0 };
   });
 
-  return () => {
-    targets.forEach((t) => {
-      t.removeEventListener("pointermove", stopIfTouch, opts);
-      t.removeEventListener("pointerdown", stopIfTouch, opts);
-      t.removeEventListener("touchmove", stopIfTouch, opts);
-      t.removeEventListener("touchstart", stopIfTouch, opts);
-    });
+  function easeInOut(t) {
+    return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+  }
+
+  function animateTo(card, toLevel, duration = 900) {
+    const d = card._aw;
+    if (!d) return;
+
+    if (d.raf) cancelAnimationFrame(d.raf);
+
+    const from = d.current;
+    const to = Math.max(0, Math.min(100, toLevel));
+    const start = performance.now();
+
+    const tick = (now) => {
+      const p = Math.min(1, (now - start) / duration);
+      const e = easeInOut(p);
+
+      const val = from + (to - from) * e;
+      d.current = val;
+
+      const cur = (val / 100) * d.C;
+      d.bar.style.strokeDasharray = `${cur} ${d.C}`;
+      d.glow.style.strokeDasharray = `${cur} ${d.C}`;
+      d.count.textContent = String(Math.round(val));
+
+      if (p < 1) d.raf = requestAnimationFrame(tick);
+    };
+
+    d.raf = requestAnimationFrame(tick);
+  }
+
+  const seen = new WeakSet();
+
+  const cardIO = new IntersectionObserver(
+    (entries) => {
+      entries.forEach((e) => {
+        const card = e.target;
+        if (!card._aw) return;
+
+        if (e.isIntersecting) {
+          card.style.opacity = "1";
+          card.style.transform = "translateY(0)";
+
+          animateTo(card, card._aw.level, 950);
+          seen.add(card);
+        } else {
+          animateTo(card, 0, 650);
+        }
+      });
+    },
+    {
+      threshold: 0.35,
+      rootMargin: "0px 0px -10% 0px",
+    },
+  );
+
+  cards.forEach((card) => {
+    card.style.opacity = "0";
+    card.style.transform = "translateY(10px)";
+    card.style.transition = "opacity .45s ease, transform .45s ease";
+
+    cardIO.observe(card);
+  });
+
+  setTimeout(() => {
+    if (!document.querySelector("#skills .awSkillCard[style*='opacity: 1']")) {
+      cards.forEach((c) => {
+        c.style.opacity = "1";
+        c.style.transform = "none";
+      });
+      section.classList.remove("is-ready");
+    }
+  }, 900);
+});
+
+(function () {
+  const btn = document.getElementById("openProjectsMenu");
+  if (!btn) return;
+
+  const burger = document.querySelector(".mxd-nav__hamburger");
+
+  const projectsToggle = Array.from(
+    document.querySelectorAll(".main-menu__link.btn.btn-anim"),
+  ).find((el) => (el.textContent || "").trim().toLowerCase() === "my projects");
+
+  const openHamburger = () => {
+    if (!burger) return;
+    burger.click();
   };
-}
+
+  const openProjectsSubmenu = () => {
+    if (!projectsToggle) return;
+
+    projectsToggle.click();
+
+    projectsToggle.scrollIntoView({ behavior: "smooth", block: "center" });
+  };
+
+  btn.addEventListener("click", (e) => {
+    e.preventDefault();
+
+    openHamburger();
+
+    setTimeout(openProjectsSubmenu, 120);
+  });
+})();
 
 
 
