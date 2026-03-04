@@ -61,89 +61,259 @@
 /* global gsap, ScrollTrigger, Flip, imagesLoaded, Lenis, Typed, Modernizr, $, Ukiyo, SplitType, Swiper, SVGInjector */
 /* exported optionsNormal, optionsDecimal, optionsDecimalTwo, optionsPercent, optionsK, optionsPlus */
 
+/* =========================================================
+   GSAP / PLUGINS / BASE
+========================================================= */
+
 if (window.gsap) {
   gsap.config({ nullTargetWarn: false });
 }
 
-gsap.registerPlugin(ScrollTrigger);
-gsap.registerPlugin(Flip);
+if (typeof ScrollTrigger !== "undefined") gsap.registerPlugin(ScrollTrigger);
+if (typeof Flip !== "undefined") gsap.registerPlugin(Flip);
+
+/* =========================================================
+   PRELOAD (imagesLoaded)
+========================================================= */
 
 const content = document.querySelector("body");
 const imgLoad = imagesLoaded(content);
+
 const loadingWrap = document.querySelector(".loading-wrap");
-const loadingItems = loadingWrap.querySelectorAll(".loading__item");
+const loadingItems = loadingWrap ? loadingWrap.querySelectorAll(".loading__item") : [];
 const fadeInItems = document.querySelectorAll(".loading__fade");
 
-function startLoader() {
-  const counterElement = document.querySelector(".loader__count .count__text");
-  let currentValue = 0;
-  function updateCounter() {
-    if (currentValue < 100) {
-      const increment = Math.floor(Math.random() * 10) + 1;
-      currentValue = Math.min(currentValue + increment, 100);
-      counterElement.textContent = currentValue;
-      const delay = Math.floor(Math.random() * 120) + 25;
-      setTimeout(updateCounter, delay);
-    }
-  }
-  updateCounter();
-}
-startLoader();
+/* =========================================================
+   LENIS (created paused — starts after enter)
+========================================================= */
 
-imgLoad.on("done", () => {
-  hideLoader();
-  pageAppearance();
-});
+window.lenis = new Lenis();
+const lenis = window.lenis;
 
-function hideLoader() {
-  gsap.to(".loader__count", {
-    duration: 0.8,
-    ease: "power2.in",
-    y: "100%",
-    delay: 1.8,
-  });
-  gsap.to(".loader__wrapper", {
-    duration: 0.8,
-    ease: "power4.in",
-    y: "-100%",
-    delay: 2.2,
-  });
-  setTimeout(() => {
-    document.getElementById("loader").classList.add("loaded");
-  }, 3200);
+// pause immediately (loader will start later)
+if (typeof lenis.stop === "function") lenis.stop();
+
+if (typeof ScrollTrigger !== "undefined") {
+  lenis.on("scroll", ScrollTrigger.update);
 }
 
-function pageAppearance() {
-  gsap.set(loadingItems, { opacity: 0 });
-  gsap.to(
-    loadingItems,
-    {
-      duration: 1.1,
-      ease: "power4",
-      startAt: { y: 120 },
-      y: 0,
-      opacity: 1,
-      delay: 0.8,
-      stagger: 0.08,
-    },
-    ">-=1.1",
-  );
-  gsap.set(fadeInItems, { opacity: 0 });
-  gsap.to(fadeInItems, { duration: 0.8, ease: "none", opacity: 1, delay: 3.2 });
-}
-
-const lenis = new Lenis();
-lenis.on("scroll", ScrollTrigger.update);
 gsap.ticker.add((time) => {
   lenis.raf(time * 1000);
 });
 gsap.ticker.lagSmoothing(0);
 
-$(window).on("load", function () {
-  "use strict";
+/* =========================================================
+   LOADER GATE (stays until scroll, NO scroll leakage, NO jump)
+========================================================= */
 
+(function loaderGate() {
+  const loader = document.getElementById("loader");
+  const label = document.getElementById("loaderLabel");
+  const hint = document.getElementById("loaderHint");
+
+  let ready = false;
+  let opening = false;
+  let cooldownTimer = null;
+
+  if ("scrollRestoration" in history) history.scrollRestoration = "manual";
+
+  function getScrollbarWidth() {
+    return Math.max(0, window.innerWidth - document.documentElement.clientWidth);
+  }
+
+  function forceTop() {
+    if (opening) return;
+    if (window.scrollY !== 0) window.scrollTo(0, 0);
+  }
+
+  function lockScrollHard() {
+    window.scrollTo(0, 0);
+
+    const sbw = getScrollbarWidth();
+    document.documentElement.classList.add("is-locked");
+    document.body.classList.add("is-locked");
+    document.body.classList.add("is-gated");
+
+    document.body.style.paddingRight = sbw ? `${sbw}px` : "";
+    document.body.style.top = "0px";
+
+    try {
+      if (window.lenis && typeof window.lenis.stop === "function") window.lenis.stop();
+    } catch (e) {}
+  }
+
+  function unlockScrollHard() {
+    document.documentElement.classList.remove("is-locked");
+    document.body.classList.remove("is-locked");
+
+    document.body.style.top = "";
+    document.body.style.paddingRight = "";
+
+    window.scrollTo(0, 0);
+
+    document.body.classList.remove("is-gated");
+  }
+
+  function startLenisDeferred() {
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        try {
+          if (window.lenis && typeof window.lenis.start === "function") window.lenis.start();
+        } catch (e) {}
+      });
+    });
+  }
+
+  function setReadyState() {
+    if (!loader) return;
+    ready = true;
+    loader.classList.add("is-ready");
+    if (label) label.textContent = "Scroll to enter";
+    if (hint) hint.textContent = "Wheel / touch / space";
+  }
+
+  function openGate() {
+    if (!ready || opening || !loader) return;
+    opening = true;
+
+    window.scrollTo(0, 0);
+
+    gsap.to(".loader__content", {
+      duration: 0.55,
+      ease: "power2.out",
+      opacity: 0,
+      y: 10,
+    });
+
+    gsap.to(".loader__wrapper", {
+      duration: 0.85,
+      ease: "power4.inOut",
+      y: "-100%",
+      delay: 0.15,
+      onComplete: () => {
+        loader.classList.add("loaded");
+        loader.setAttribute("aria-hidden", "true");
+
+        clearTimeout(cooldownTimer);
+        cooldownTimer = setTimeout(() => {
+          window.scrollTo(0, 0);
+
+          unlockScrollHard();
+          removeBlockers();
+
+          pageAppearance();
+          bootAfterEnter();
+
+          if (typeof ScrollTrigger !== "undefined") ScrollTrigger.refresh(true);
+          startLenisDeferred();
+        }, 650);
+      },
+    });
+  }
+
+  // IMPORTANT: open gate from the blocker itself
+  function kill(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    if (typeof e.stopImmediatePropagation === "function") e.stopImmediatePropagation();
+
+    // user intent: if ready, open immediately (once)
+    if (ready && !opening) openGate();
+
+    forceTop();
+  }
+
+  function killKeys(e) {
+    const keysToBlock = ["ArrowDown", "ArrowUp", "PageDown", "PageUp", "Home", "End", " "];
+    if (keysToBlock.includes(e.key)) {
+      e.preventDefault();
+      e.stopPropagation();
+      if (typeof e.stopImmediatePropagation === "function") e.stopImmediatePropagation();
+
+      if (ready && !opening) openGate();
+      forceTop();
+    }
+
+    // Enter should also open
+    if (e.key === "Enter") {
+      e.preventDefault();
+      if (ready && !opening) openGate();
+    }
+  }
+
+  function addBlockers() {
+    window.addEventListener("wheel", kill, { passive: false, capture: true });
+    window.addEventListener("touchmove", kill, { passive: false, capture: true });
+    window.addEventListener("keydown", killKeys, { passive: false, capture: true });
+    window.addEventListener("scroll", forceTop, { passive: true, capture: true });
+  }
+
+  function removeBlockers() {
+    window.removeEventListener("wheel", kill, { capture: true });
+    window.removeEventListener("touchmove", kill, { capture: true });
+    window.removeEventListener("keydown", killKeys, { capture: true });
+    window.removeEventListener("scroll", forceTop, { capture: true });
+  }
+
+  // INIT
+  lockScrollHard();
+  addBlockers();
+
+  // ready after images + fonts
+  imgLoad.on("done", () => {
+    if (document.fonts && document.fonts.ready) {
+      document.fonts.ready.then(() => setReadyState());
+    } else {
+      setReadyState();
+    }
+  });
+})();
+
+/* =========================================================
+   PAGE APPEARANCE
+========================================================= */
+
+function pageAppearance() {
+  if (loadingItems && loadingItems.length) {
+    gsap.set(loadingItems, { opacity: 0 });
+    gsap.to(loadingItems, {
+      duration: 1.1,
+      ease: "power4",
+      startAt: { y: 120 },
+      y: 0,
+      opacity: 1,
+      delay: 0.25,
+      stagger: 0.08,
+    });
+  }
+
+  if (fadeInItems && fadeInItems.length) {
+    gsap.set(fadeInItems, { opacity: 0 });
+    gsap.to(fadeInItems, {
+      duration: 0.8,
+      ease: "none",
+      opacity: 1,
+      delay: 0.2,
+    });
+  }
+}
+
+/* =========================================================
+   BOOT AFTER ENTER (ONLY after gate)
+========================================================= */
+
+function bootAfterEnter() {
+  initTyped();
+  initHeroScrollTriggers();
+  initJqueryExtras();
+
+  // DO NOT run $.smoothScroll() with Lenis (double smoothing = jumps)
+}
+
+/* ---------- Typed ---------- */
+function initTyped() {
   const animatedHeadline = $(".animated-type");
-  if (animatedHeadline.length) {
+  if (animatedHeadline.length && typeof Typed !== "undefined") {
     new Typed("#typed", {
       stringsElement: "#typed-strings",
       showCursor: true,
@@ -154,181 +324,158 @@ $(window).on("load", function () {
       backDelay: 2500,
     });
   }
-});
+}
 
+/* ---------- Header hide ---------- */
 $(window).on("scroll", function () {
-  if ($(window).scrollTop() > 10) {
-    $(".mxd-header").addClass("is-hidden");
-  } else {
-    $(".mxd-header").removeClass("is-hidden");
-  }
+  if ($(window).scrollTop() > 10) $(".mxd-header").addClass("is-hidden");
+  else $(".mxd-header").removeClass("is-hidden");
 });
 
-// Hero animations grouped and scoped
-(() => {
-  // Hero 02 static elements
+/* ---------- Hero ScrollTriggers ---------- */
+function initHeroScrollTriggers() {
+  if (typeof ScrollTrigger === "undefined") return;
+
   const hero02StaticEls = document.querySelectorAll(".hero-02-static-anim-el");
   hero02StaticEls.forEach((element) => {
-    const tl = gsap.timeline({
+    gsap.timeline({
       scrollTrigger: {
         trigger: ".hero-02-static__tl-trigger",
         start: "top 14%",
         end: "top 0.2%",
-        scrub: { scrub: true, ease: "sine" },
+        scrub: true,
       },
-    });
-    tl.fromTo(
+    }).fromTo(
       element,
       { transform: "translate3d(0, 0, 0)", scaleY: 1, opacity: 1 },
-      { transform: "translate3d(0, -5rem, 0)", scaleY: 1.3, opacity: 0 },
+      { transform: "translate3d(0, -5rem, 0)", scaleY: 1.3, opacity: 0 }
     );
   });
 
   const hero02FadeEls = document.querySelectorAll(".hero-02-fade-out-scroll");
   hero02FadeEls.forEach((element) => {
-    const tl = gsap.timeline({
+    gsap.timeline({
       scrollTrigger: {
         trigger: ".mxd-pinned-fullscreen__tl-trigger",
         start: "top 80%",
         end: "top 10%",
-        scrub: { scrub: true, ease: "sine" },
+        scrub: true,
       },
-    });
-    tl.fromTo(element, { opacity: 1 }, { opacity: 0 });
+    }).fromTo(element, { opacity: 1 }, { opacity: 0 });
   });
 
-  // Hero 07 animations
   const hero07SlideEls = document.querySelectorAll(".hero-07-slide-out-scroll");
   hero07SlideEls.forEach((element) => {
-    const tl = gsap.timeline({
+    gsap.timeline({
       scrollTrigger: {
         trigger: ".mxd-hero-07__tl-trigger",
         start: "top 86%",
         end: "top 10%",
-        scrub: { scrub: true, ease: "power4.out" },
+        scrub: true,
       },
-    });
-    tl.fromTo(
+    }).fromTo(
       element,
       { transform: "translate3d(0, 0, 0)", scaleY: 1 },
-      { transform: "translate3d(0, -26rem, 0)", scaleY: 0.8 },
+      { transform: "translate3d(0, -26rem, 0)", scaleY: 0.8 }
     );
   });
 
   const hero07FadeEls = document.querySelectorAll(".hero-07-fade-out-scroll");
   hero07FadeEls.forEach((element) => {
-    const tl = gsap.timeline({
+    gsap.timeline({
       scrollTrigger: {
         trigger: ".mxd-hero-07__tl-trigger",
         start: "top 70%",
         end: "top 40%",
-        scrub: { scrub: true, ease: "elastic.out(1,0.3)" },
+        scrub: true,
       },
-    });
-    tl.fromTo(
+    }).fromTo(
       element,
       { opacity: 1, transform: "translate3d(0, 0, 0)" },
-      { opacity: 0, transform: "translate3d(0, -10rem, 0)" },
+      { opacity: 0, transform: "translate3d(0, -10rem, 0)" }
     );
   });
 
-  // Hero 08 animations
   const hero08SlideEls = document.querySelectorAll(".hero-08-slide-out-scroll");
   hero08SlideEls.forEach((element) => {
-    const tl = gsap.timeline({
+    gsap.timeline({
       scrollTrigger: {
         trigger: ".mxd-hero-08__tl-trigger",
         start: "top 80%",
         end: "top 40%",
-        scrub: { scrub: true, ease: "power4.inOut" },
+        scrub: true,
       },
-    });
-    tl.fromTo(
+    }).fromTo(
       element,
       { transform: "translate3d(0, 0, 0)", opacity: 1 },
-      { transform: "translate3d(0, -5rem, 0)", opacity: 0 },
+      { transform: "translate3d(0, -5rem, 0)", opacity: 0 }
     );
   });
 
   const hero08ScaleEls = document.querySelectorAll(".hero-08-scale-out-scroll");
   hero08ScaleEls.forEach((element) => {
-    const tl = gsap.timeline({
+    gsap.timeline({
       scrollTrigger: {
         trigger: ".mxd-hero-08__tl-trigger",
         start: "top 40%",
         end: "top 10%",
-        scrub: { scrub: true, ease: "power4.inOut" },
+        scrub: true,
       },
-    });
-    tl.fromTo(
+    }).fromTo(
       element,
       { transform: "translate3d(0, 0, 0)", scaleY: 1, opacity: 1 },
-      { transform: "translate3d(0, -5rem, 0)", scaleY: 1.2, opacity: 0 },
+      { transform: "translate3d(0, -5rem, 0)", scaleY: 1.2, opacity: 0 }
     );
   });
-})();
+}
 
-$(function () {
-  if (!Modernizr.svg) {
+/* ---------- jQuery extras ---------- */
+function initJqueryExtras() {
+  if (typeof Modernizr !== "undefined" && !Modernizr.svg) {
     $("img[src*='svg']").attr("src", function () {
       return $(this).attr("src").replace(".svg", ".png");
     });
   }
 
-  try {
-    $.browserSelector();
-    if ($("html").hasClass("chrome")) {
-      $.smoothScroll();
-    }
-  } catch (err) {}
-
   $("img, a").on("dragstart", function (event) {
     event.preventDefault();
   });
 
-  // detect touch devices, legacy IE detection removed (unused)
-  if (
-    /Android|webOS|iPhone|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
-      navigator.userAgent,
-    )
-  ) {
+  if (/Android|webOS|iPhone|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)) {
     $("html").addClass("touch");
   } else {
     $("html").addClass("no-touch");
   }
 
+  // Anchor smooth scroll
   $('a[href*="#"]')
     .not('[href="#"]')
     .not('[href="#0"]')
-    .click(function (event) {
+    .off("click")
+    .on("click", function (event) {
       if (
-        location.pathname.replace(/^\//, "") ===
-          this.pathname.replace(/^\//, "") &&
+        location.pathname.replace(/^\//, "") === this.pathname.replace(/^\//, "") &&
         location.hostname === this.hostname
       ) {
         let target = $(this.hash);
-        target = target.length
-          ? target
-          : $("[name=" + this.hash.slice(1) + "]");
+        target = target.length ? target : $("[name=" + this.hash.slice(1) + "]");
         if (target.length) {
           event.preventDefault();
-          $("html, body").animate(
-            { scrollTop: target.offset().top },
-            1000,
-            function () {
-              const $target = $(target);
-              $target.focus();
-              if ($target.is(":focus")) {
-                return false;
-              } else {
-                $target.attr("tabindex", "-1");
-                $target.focus();
-              }
-            },
-          );
+
+          // Prefer Lenis if available
+          if (window.lenis && typeof window.lenis.scrollTo === "function") {
+            window.lenis.scrollTo(target.get(0), { offset: 0, duration: 1.0 });
+            return;
+          }
+
+          $("html, body").animate({ scrollTop: target.offset().top }, 1000, function () {
+            const $target = $(target);
+            $target.attr("tabindex", "-1").focus();
+          });
         }
       }
     });
+}
 
   $(".mxd-nav__wrap").each(function () {
     const hamburgerEl = $(this).find(".mxd-nav__hamburger");
@@ -533,7 +680,7 @@ $(function () {
     });
     return false;
   });
-});
+
 
 const images = document.querySelectorAll(".parallax-img");
 const imagesSmall = document.querySelectorAll(".parallax-img-small");
