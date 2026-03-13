@@ -1,0 +1,141 @@
+/*! ------------------------------------------------
+ * loader.css (dark-only, loader stays until scroll)
+ * ------------------------------------------------ */
+
+:root {
+  --_font-default: "Funnel Sans", sans-serif;
+
+  --base: #161616;
+  --t-bright: #ffffff;
+  --t-medium: rgba(255, 255, 255, 0.74);
+  --t-muted: rgba(255, 255, 255, 0.58);
+
+  --fw-regular: 300;
+  --fw-medium: 500;
+  --fw-semibold: 600;
+  --fw-bold: 700;
+}
+
+/* Lock scroll while loader is visible */
+html.is-locked,
+body.is-locked {
+  height: 100%;
+  overflow: hidden !important;
+}
+
+/* Loader shell */
+.loader {
+  position: fixed;
+  inset: 0;
+  z-index: 2000; /* always above hero */
+  pointer-events: auto;
+}
+
+.loader.loaded {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.loader__wrapper {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  background: var(--base);
+  color: var(--t-bright);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.loader__content {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 100%;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+
+  text-align: center;
+  user-select: none;
+}
+
+/* Text */
+.loader__label {
+  margin: 0;
+  font: normal var(--fw-medium) 0.95rem/1.2 var(--_font-default);
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--t-medium);
+}
+
+.loader__hint {
+  margin: 0;
+  font: normal var(--fw-regular) 0.85rem/1.2 var(--_font-default);
+  letter-spacing: 0.10em;
+  text-transform: uppercase;
+  color: var(--t-muted);
+  opacity: 0.9;
+}
+
+/* When ready */
+.loader.is-ready .loader__hint {
+  opacity: 0.95;
+}
+
+/* Mouse indicator (CodePen-inspired) */
+.scroll-downs {
+  width: 34px;
+  height: 55px;
+  margin: 0 auto;
+  transform: translateZ(0);
+}
+
+.mousey {
+  width: 3px;
+  padding: 10px 15px;
+  height: 35px;
+  border: 2px solid rgba(255, 255, 255, 0.9);
+  border-radius: 25px;
+  box-sizing: content-box;
+  animation: mousePulse 2.6s ease-in-out infinite;
+}
+
+.scroller {
+  width: 3px;
+  height: 10px;
+  border-radius: 25%;
+  background-color: rgba(255, 255, 255, 0.95);
+  animation: scroll 2.2s cubic-bezier(.15, .41, .69, .94) infinite;
+}
+
+@keyframes scroll {
+  0% { opacity: 0; }
+  10% { transform: translateY(0); opacity: 1; }
+  100% { transform: translateY(15px); opacity: 0; }
+}
+
+@keyframes mousePulse {
+  0% { transform: scale(1); opacity: 0.75; }
+  50% { transform: scale(1.08); opacity: 1; }
+  100% { transform: scale(1); opacity: 0.75; }
+}
+
+html { scrollbar-gutter: stable; }
+
+html.is-locked,
+body.is-locked { height: 100%; overflow: hidden !important; }
+
+body.is-locked { position: fixed; width: 100%; left: 0; }
+
+/* sakrij page dok loader traje (sprječava “refresh” osjećaj) */
+body.is-gated #header,
+body.is-gated .mxd-nav__wrap,
+body.is-gated #mxd-page-content,
+body.is-gated #mxd-footer { opacity: 0; }
