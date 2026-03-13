@@ -1,12 +1,4 @@
-# ignore everything in assets
-assets/*
-
-# but keep images
-!assets/img/
-!assets/img/**
-
-# editor
 .vscode/
-
-# system
 .DS_Store
+node_modules/
+.env
