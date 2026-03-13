@@ -1,0 +1,14 @@
+# system
+.DS_Store
+
+# editor
+.vscode/
+
+# heavy assets
+assets/
+
+# node
+node_modules/
+
+# env
+.env
