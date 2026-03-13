@@ -1,14 +1,12 @@
-# system
-.DS_Store
+# ignore everything in assets
+assets/*
+
+# but keep images
+!assets/img/
+!assets/img/**
 
 # editor
 .vscode/
 
-# heavy assets
-assets/
-
-# node
-node_modules/
-
-# env
-.env
+# system
+.DS_Store
