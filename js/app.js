@@ -1741,7 +1741,7 @@ function installTouchMoveShield() {
   const bar = document.querySelector('.hxg-progress__bar');
   const descEl = document.getElementById('hxgDesc');
   const cards = Array.from(rail.querySelectorAll('.hxg-card'));
-  if (!cards.length) return;
+  if (!cards.length || !descEl) return;
 
   const reduce =
     window.matchMedia &&
@@ -1772,7 +1772,9 @@ function installTouchMoveShield() {
     const n = arr.length;
     if (!n) return 0;
 
-    let lo = 0, hi = n - 1;
+    let lo = 0;
+    let hi = n - 1;
+
     while (lo < hi) {
       const mid = (lo + hi) >> 1;
       if (arr[mid] < cx) lo = mid + 1;
@@ -1784,7 +1786,7 @@ function installTouchMoveShield() {
     if (i >= n) return n - 1;
 
     const prev = i - 1;
-    return (Math.abs(arr[prev] - cx) <= Math.abs(arr[i] - cx)) ? prev : i;
+    return Math.abs(arr[prev] - cx) <= Math.abs(arr[i] - cx) ? prev : i;
   }
 
   function scrollToIndex(i, behavior = 'smooth') {
@@ -1795,7 +1797,6 @@ function installTouchMoveShield() {
   }
 
   function createMeasureEl() {
-    if (!descEl) return null;
     const m = document.createElement('div');
     m.className = descEl.className;
     m.style.position = 'absolute';
@@ -1817,8 +1818,6 @@ function installTouchMoveShield() {
   const measureEl = createMeasureEl();
 
   function lockDescHeightToMax() {
-    if (!descEl || !measureEl) return;
-
     const rect = descEl.getBoundingClientRect();
     if (!rect.width) return;
 
@@ -1838,117 +1837,191 @@ function installTouchMoveShield() {
       maxH = measureEl.scrollHeight || 0;
     }
 
-    if (maxH) {
-      descEl.style.height = maxH + 'px';
+    if (maxH) descEl.style.height = maxH + 'px';
+  }
+
+  const typing = {
+    timer: 0,
+    text: '',
+    out: '',
+    index: 0,
+    running: false,
+    paused: false,
+    done: false,
+    caret: null
+  };
+
+  let activeIndex = -1;
+  let started = false;
+  let inView = false;
+
+  const baseMin = 18;
+  const baseMax = 42;
+  const thinkChance = 0.06;
+  const maxThinkPause = 180;
+
+  const rand = (a, b) => a + Math.random() * (b - a);
+
+  function charDelay(ch, prev) {
+    if (ch === ' ') return rand(10, 18);
+    if (',;:'.includes(ch)) return rand(90, 140);
+    if ('.!?'.includes(ch)) return rand(140, 220);
+    if (prev && '.!?'.includes(prev)) return rand(40, 80);
+    if (ch >= 'A' && ch <= 'Z') return rand(baseMin + 6, baseMax + 10);
+    if (ch >= '0' && ch <= '9') return rand(baseMin + 4, baseMax + 8);
+    return rand(baseMin, baseMax);
+  }
+
+  function maybeThinkPause(ch) {
+    const extra =
+      (',;:'.includes(ch) && Math.random() < 0.35) ||
+      (ch === ' ' && Math.random() < thinkChance);
+    return extra ? rand(80, maxThinkPause) : 0;
+  }
+
+  function ensureCaret() {
+    if (!typing.caret) {
+      typing.caret = document.createElement('span');
+      typing.caret.className = 'hxg-caret';
+      typing.caret.textContent = '▍';
+    }
+    return typing.caret;
+  }
+
+  function renderDesc(text) {
+    descEl.textContent = text;
+    if (!typing.done) {
+      descEl.appendChild(ensureCaret());
     }
   }
 
-  let typingToken = 0;
-  let typingTimer = 0;
-
-  function stopTyping() {
-    typingToken++;
-    if (typingTimer) window.clearTimeout(typingTimer);
-    typingTimer = 0;
+  function clearTypingTimer() {
+    if (typing.timer) {
+      window.clearTimeout(typing.timer);
+      typing.timer = 0;
+    }
   }
 
-  function setDescTyped(text) {
-    if (!descEl) return;
+  function pauseTyping() {
+    clearTypingTimer();
+    typing.running = false;
+    typing.paused = true;
+  }
 
+  function finishTyping() {
+    clearTypingTimer();
+    typing.running = false;
+    typing.paused = false;
+    typing.done = true;
+    descEl.textContent = typing.text;
+  }
+
+  function stepTyping(prev = '') {
+    if (!typing.running || typing.paused || typing.done) return;
+    if (!inView) {
+      pauseTyping();
+      return;
+    }
+
+    if (typing.index >= typing.text.length) {
+      typing.timer = window.setTimeout(() => {
+        finishTyping();
+      }, 320);
+      return;
+    }
+
+    const ch = typing.text[typing.index];
+    typing.out += ch;
+    typing.index += 1;
+
+    renderDesc(typing.out);
+
+    typing.timer = window.setTimeout(
+      () => stepTyping(ch),
+      charDelay(ch, prev) + maybeThinkPause(ch)
+    );
+  }
+
+  function startTypingText(text) {
     const next = (text || '').trim();
-    const current = descEl.getAttribute('data-full') || descEl.textContent.trim();
-    if (!next || current === next) return;
+    if (!next) return;
 
-    stopTyping();
+    clearTypingTimer();
+
+    typing.text = next;
+    typing.out = '';
+    typing.index = 0;
+    typing.running = false;
+    typing.paused = false;
+    typing.done = false;
 
     descEl.setAttribute('data-full', next);
 
     descEl.classList.add('is-enter');
-    requestAnimationFrame(() =>
-      requestAnimationFrame(() => descEl.classList.remove('is-enter'))
-    );
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        descEl.classList.remove('is-enter');
+      });
+    });
 
     if (reduce) {
       descEl.textContent = next;
+      typing.out = next;
+      typing.index = next.length;
+      typing.done = true;
       return;
     }
 
-    descEl.textContent = '';
-    const caret = document.createElement('span');
-    caret.className = 'hxg-caret';
-    caret.textContent = '▍';
-    descEl.appendChild(caret);
+    renderDesc('');
 
-    const myToken = typingToken;
-    let i = 0;
-    let out = '';
-
-    const baseMin = 18, baseMax = 42;
-    const thinkChance = 0.06;
-    const maxThinkPause = 180;
-
-    const rand = (a, b) => a + Math.random() * (b - a);
-
-    function charDelay(ch, prev) {
-      if (ch === ' ') return rand(10, 18);
-      if (',;:'.includes(ch)) return rand(90, 140);
-      if ('.!?'.includes(ch)) return rand(140, 220);
-      if (prev && '.!?'.includes(prev)) return rand(40, 80);
-      if (ch >= 'A' && ch <= 'Z') return rand(baseMin + 6, baseMax + 10);
-      if (ch >= '0' && ch <= '9') return rand(baseMin + 4, baseMax + 8);
-      return rand(baseMin, baseMax);
+    if (inView) {
+      typing.running = true;
+      typing.timer = window.setTimeout(() => stepTyping(''), rand(80, 160));
+    } else {
+      typing.paused = true;
     }
-
-    function maybeThinkPause(ch) {
-      const extra =
-        (',;:'.includes(ch) && Math.random() < 0.35) ||
-        (ch === ' ' && Math.random() < thinkChance);
-      return extra ? rand(80, maxThinkPause) : 0;
-    }
-
-    function render(t) {
-      descEl.textContent = t;
-      descEl.appendChild(caret);
-    }
-
-    function step(prev) {
-      if (myToken !== typingToken) return;
-
-      if (i >= next.length) {
-        render(out);
-        typingTimer = window.setTimeout(() => {
-          if (myToken !== typingToken) return;
-          descEl.textContent = out;
-          typingTimer = 0;
-        }, 520);
-        return;
-      }
-
-      const ch = next[i];
-      out += ch;
-      i++;
-      render(out);
-
-      typingTimer = window.setTimeout(
-        () => step(ch),
-        charDelay(ch, prev) + maybeThinkPause(ch)
-      );
-    }
-
-    typingTimer = window.setTimeout(() => step(''), rand(120, 220));
   }
 
-  let activeIndex = -1;
+  function resumeTyping() {
+    if (reduce) return;
+    if (!typing.text) return;
+    if (typing.done) return;
+    if (typing.running) return;
+    if (!typing.paused) return;
+    if (!inView) return;
 
-  let inView = false;
-  let started = false;
+    typing.paused = false;
+    typing.running = true;
+    renderDesc(typing.out);
+    typing.timer = window.setTimeout(() => stepTyping(''), rand(40, 90));
+  }
 
-  function setActiveIndex(i) {
-    if (i === activeIndex) return;
-    activeIndex = i;
-    if (!inView && started) return;
-    if (!started) return;
-    setDescTyped(cards[i]?.getAttribute('data-desc') || '');
+  function setDescForIndex(i) {
+    const card = cards[i];
+    if (!card) return;
+
+    const nextText = (card.getAttribute('data-desc') || '').trim();
+    const currentText = typing.text.trim();
+
+    if (i !== activeIndex) {
+      activeIndex = i;
+      startTypingText(nextText);
+      return;
+    }
+
+    if (!currentText && nextText) {
+      startTypingText(nextText);
+      return;
+    }
+
+    if (currentText !== nextText) {
+      startTypingText(nextText);
+      return;
+    }
+
+    if (typing.paused && inView) {
+      resumeTyping();
+    }
   }
 
   function startHXG() {
@@ -1960,7 +2033,7 @@ function installTouchMoveShield() {
 
     const i = nearestIndexByScroll();
     activeIndex = -1;
-    setActiveIndex(i);
+    setDescForIndex(i);
   }
 
   let rafPending = false;
@@ -1969,7 +2042,9 @@ function installTouchMoveShield() {
     rafPending = false;
     updateProgress();
     if (!started) return;
-    setActiveIndex(nearestIndexByScroll());
+
+    const i = nearestIndexByScroll();
+    setDescForIndex(i);
   }
 
   function onScroll() {
@@ -1986,7 +2061,9 @@ function installTouchMoveShield() {
   function scheduleSnap(delay = 140) {
     if (reduce) return;
     if (!started) return;
+
     if (snapTimer) window.clearTimeout(snapTimer);
+
     snapTimer = window.setTimeout(() => {
       snapTimer = 0;
       const i = nearestIndexByScroll();
@@ -2044,7 +2121,6 @@ function installTouchMoveShield() {
     delta *= sens;
 
     e.preventDefault();
-    stopTyping();
 
     wheelAccum += delta;
     if (!wheelRaf) wheelRaf = requestAnimationFrame(applyWheel);
@@ -2067,25 +2143,32 @@ function installTouchMoveShield() {
     startX = e.clientX;
     startLeft = rail.scrollLeft;
 
-    stopTyping();
     rail.classList.add('hxg-dragging');
-    rail.setPointerCapture(dragId);
+
+    try {
+      rail.setPointerCapture(dragId);
+    } catch {}
   }
 
   function onPointerMove(e) {
     if (!dragging || e.pointerId !== dragId) return;
+
     const dx = e.clientX - startX;
     moved = Math.max(moved, Math.abs(dx));
+
     const max = maxScrollLeft();
     rail.scrollLeft = clamp(startLeft - dx, 0, max);
   }
 
   function onPointerUp(e) {
     if (!dragging || e.pointerId !== dragId) return;
+
     dragging = false;
     rail.classList.remove('hxg-dragging');
 
-    try { rail.releasePointerCapture(dragId); } catch {}
+    try {
+      rail.releasePointerCapture(dragId);
+    } catch {}
 
     if (moved > 6) scheduleSnap(140);
   }
@@ -2095,11 +2178,16 @@ function installTouchMoveShield() {
   rail.addEventListener('pointerup', onPointerUp, { passive: true });
   rail.addEventListener('pointercancel', onPointerUp, { passive: true });
 
+  cards.forEach((card, index) => {
+    card.addEventListener('click', () => {
+      scrollToIndex(index, 'smooth');
+    });
+  });
+
   function onResize() {
     centers = cardCenters();
     updateProgress();
     lockDescHeightToMax();
-    if (started) setActiveIndex(nearestIndexByScroll());
   }
 
   if ('ResizeObserver' in window) {
@@ -2109,9 +2197,13 @@ function installTouchMoveShield() {
     window.addEventListener('resize', onResize, { passive: true });
   }
 
-  window.addEventListener('load', () => {
-    requestAnimationFrame(() => requestAnimationFrame(onResize));
-  }, { passive: true });
+  window.addEventListener(
+    'load',
+    () => {
+      requestAnimationFrame(() => requestAnimationFrame(onResize));
+    },
+    { passive: true }
+  );
 
   if (document.fonts && document.fonts.ready) {
     document.fonts.ready.then(() => onResize()).catch(() => {});
@@ -2122,8 +2214,8 @@ function installTouchMoveShield() {
   if ('IntersectionObserver' in window) {
     const io = new IntersectionObserver(
       (entries) => {
-        const e = entries[0];
-        inView = !!e.isIntersecting;
+        const entry = entries[0];
+        inView = !!entry.isIntersecting;
 
         if (inView) {
           startHXG();
@@ -2131,10 +2223,17 @@ function installTouchMoveShield() {
             centers = cardCenters();
             lockDescHeightToMax();
             updateProgress();
-            setActiveIndex(nearestIndexByScroll());
+
+            const i = nearestIndexByScroll();
+
+            if (i !== activeIndex) {
+              setDescForIndex(i);
+            } else {
+              resumeTyping();
+            }
           });
         } else {
-          stopTyping();
+          pauseTyping();
         }
       },
       {
@@ -2189,3 +2288,4 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   });
 });
+
