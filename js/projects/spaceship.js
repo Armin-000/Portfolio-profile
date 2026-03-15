@@ -34,51 +34,56 @@ const renderer = new THREE.WebGLRenderer({
 });
 
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.8));
-renderer.setSize(viewer.clientWidth, viewer.clientHeight);
+renderer.setSize(
+  Math.max(viewer.clientWidth, 1),
+  Math.max(viewer.clientHeight, 1)
+);
 renderer.outputColorSpace = THREE.SRGBColorSpace;
 renderer.setClearColor(0x000000, 0);
 
 renderer.domElement.style.display = 'block';
 renderer.domElement.style.width = '100%';
 renderer.domElement.style.height = '100%';
-renderer.domElement.style.touchAction = isTouchDevice ? 'none' : 'none';
+renderer.domElement.style.touchAction = isTouchDevice ? 'pan-y' : 'none';
 
 viewer.appendChild(renderer.domElement);
 
-const controls = new OrbitControls(camera, renderer.domElement);
-controls.enabled = true;
-controls.enableDamping = true;
-controls.dampingFactor = isTouchDevice ? 0.09 : 0.06;
-controls.enablePan = false;
-controls.enableZoom = false;
-controls.rotateSpeed = isTouchDevice ? 0.65 : 0.8;
-controls.target.set(0, 0, 0);
+/* -----------------------------
+   DESKTOP CONTROLS ONLY
+----------------------------- */
+let controls = null;
 
-// stabilnije ponašanje na touch uređajima
-if (isTouchDevice) {
-  controls.touches.ONE = THREE.TOUCH.ROTATE;
-  controls.touches.TWO = THREE.TOUCH.DOLLY_PAN;
+if (!isTouchDevice) {
+  controls = new OrbitControls(camera, renderer.domElement);
+  controls.enableDamping = true;
+  controls.dampingFactor = 0.06;
+  controls.enablePan = false;
+  controls.enableZoom = false;
+  controls.rotateSpeed = 0.8;
+  controls.target.set(0, 0, 0);
 }
 
-// ako želiš samo lijevo-desno rotaciju:
-// controls.minPolarAngle = Math.PI / 2;
-// controls.maxPolarAngle = Math.PI / 2;
-
-const ambientLight = new THREE.AmbientLight(0xffffff, 2.2);
+/* -----------------------------
+   LIGHTS
+----------------------------- */
+const ambientLight = new THREE.AmbientLight(0xffffff, 2.4);
 scene.add(ambientLight);
 
-const keyLight = new THREE.DirectionalLight(0xffffff, 2.8);
+const keyLight = new THREE.DirectionalLight(0xffffff, 3.0);
 keyLight.position.set(6, 7, 10);
 scene.add(keyLight);
 
-const rimLight = new THREE.DirectionalLight(0xaec8ff, 1.6);
+const rimLight = new THREE.DirectionalLight(0xaec8ff, 1.8);
 rimLight.position.set(-8, 4, -8);
 scene.add(rimLight);
 
-const fillLight = new THREE.PointLight(0x88ccff, 1.2, 25);
+const fillLight = new THREE.PointLight(0x88ccff, 1.4, 25);
 fillLight.position.set(0, -1, 3);
 scene.add(fillLight);
 
+/* -----------------------------
+   LOADERS / CLOCK
+----------------------------- */
 const gltfLoader = new GLTFLoader();
 const clock = new THREE.Clock();
 
@@ -90,6 +95,27 @@ let actions = [];
 let isPaused = false;
 let modelRoot = null;
 
+/* -----------------------------
+   MOBILE CUSTOM ROTATION
+----------------------------- */
+let touchDragging = false;
+let touchStartedInsideViewer = false;
+let lastTouchX = 0;
+let lastTouchY = 0;
+
+let targetRotationY = 0;
+let targetRotationX = 0;
+let currentRotationY = 0;
+let currentRotationX = 0;
+
+const ROTATION_X_LIMIT = 0.35;
+const TOUCH_ROTATE_SPEED_X = 0.0035;
+const TOUCH_ROTATE_SPEED_Y = 0.0055;
+const ROTATION_SMOOTHING = 0.1;
+
+/* -----------------------------
+   UI
+----------------------------- */
 function setAnimationButtonState() {
   if (!toggleAnimationBtn || !animIconPath) return;
 
@@ -111,6 +137,9 @@ function setAnimationButtonState() {
   }
 }
 
+/* -----------------------------
+   MODEL PREP
+----------------------------- */
 function cleanupModel(root) {
   root.traverse((child) => {
     if (!child.isMesh) return;
@@ -130,7 +159,7 @@ function cleanupModel(root) {
 
     materials.forEach((mat) => {
       if (!mat) return;
-      if ('envMapIntensity' in mat) mat.envMapIntensity = 1.15;
+      if ('envMapIntensity' in mat) mat.envMapIntensity = 1.2;
       mat.needsUpdate = true;
     });
   });
@@ -145,12 +174,16 @@ function frameModel(root) {
 
   const maxDim = Math.max(size.x, size.y, size.z);
   const fov = camera.fov * (Math.PI / 180);
+
   let cameraZ = Math.abs((maxDim * 0.72) / Math.tan(fov / 2));
-  cameraZ *= isTouchDevice ? 1.6 : 1.45;
+  cameraZ *= isTouchDevice ? 1.5 : 1.45;
 
   camera.position.set(0, Math.max(maxDim * 0.2, 0.9), cameraZ);
-  controls.target.set(0, 0, 0);
-  controls.update();
+
+  if (controls) {
+    controls.target.set(0, 0, 0);
+    controls.update();
+  }
 }
 
 function setupAnimations(gltf, root) {
@@ -175,6 +208,91 @@ function setupAnimations(gltf, root) {
   setAnimationButtonState();
 }
 
+/* -----------------------------
+   MOBILE TOUCH HANDLING
+----------------------------- */
+function pointInsideViewer(clientX, clientY) {
+  const rect = viewer.getBoundingClientRect();
+  return (
+    clientX >= rect.left &&
+    clientX <= rect.right &&
+    clientY >= rect.top &&
+    clientY <= rect.bottom
+  );
+}
+
+function onTouchStart(e) {
+  if (!modelRoot) return;
+  if (e.touches.length !== 1) {
+    touchDragging = false;
+    touchStartedInsideViewer = false;
+    return;
+  }
+
+  const touch = e.touches[0];
+  const inside = pointInsideViewer(touch.clientX, touch.clientY);
+
+  if (!inside) {
+    touchDragging = false;
+    touchStartedInsideViewer = false;
+    return;
+  }
+
+  touchStartedInsideViewer = true;
+  touchDragging = true;
+  lastTouchX = touch.clientX;
+  lastTouchY = touch.clientY;
+}
+
+function onTouchMove(e) {
+  if (!modelRoot) return;
+  if (!touchDragging || !touchStartedInsideViewer) return;
+  if (e.touches.length !== 1) return;
+
+  const touch = e.touches[0];
+  const deltaX = touch.clientX - lastTouchX;
+  const deltaY = touch.clientY - lastTouchY;
+
+  lastTouchX = touch.clientX;
+  lastTouchY = touch.clientY;
+
+  targetRotationY += deltaX * TOUCH_ROTATE_SPEED_Y;
+  targetRotationX += deltaY * TOUCH_ROTATE_SPEED_X;
+
+  targetRotationX = Math.max(
+    -ROTATION_X_LIMIT,
+    Math.min(ROTATION_X_LIMIT, targetRotationX)
+  );
+
+  e.preventDefault();
+}
+
+function onTouchEnd() {
+  touchDragging = false;
+  touchStartedInsideViewer = false;
+}
+
+function setupMobileTouchRotation() {
+  renderer.domElement.addEventListener('touchstart', onTouchStart, {
+    passive: true
+  });
+
+  renderer.domElement.addEventListener('touchmove', onTouchMove, {
+    passive: false
+  });
+
+  renderer.domElement.addEventListener('touchend', onTouchEnd, {
+    passive: true
+  });
+
+  renderer.domElement.addEventListener('touchcancel', onTouchEnd, {
+    passive: true
+  });
+}
+
+/* -----------------------------
+   LOAD MODEL
+----------------------------- */
 function loadSpaceship() {
   gltfLoader.load(
     MODEL_URL,
@@ -186,6 +304,11 @@ function loadSpaceship() {
 
       frameModel(modelRoot);
       setupAnimations(gltf, modelRoot);
+
+      currentRotationY = modelRoot.rotation.y;
+      currentRotationX = modelRoot.rotation.x;
+      targetRotationY = modelRoot.rotation.y;
+      targetRotationX = modelRoot.rotation.x;
     },
     undefined,
     (error) => {
@@ -195,6 +318,9 @@ function loadSpaceship() {
   );
 }
 
+/* -----------------------------
+   BUTTON
+----------------------------- */
 if (toggleAnimationBtn) {
   toggleAnimationBtn.addEventListener('click', () => {
     if (!actions.length) return;
@@ -209,6 +335,9 @@ if (toggleAnimationBtn) {
   });
 }
 
+/* -----------------------------
+   RESIZE
+----------------------------- */
 let resizeRaf = null;
 
 function handleResize() {
@@ -230,6 +359,9 @@ function handleResize() {
 
 window.addEventListener('resize', handleResize);
 
+/* -----------------------------
+   ANIMATE
+----------------------------- */
 function animate() {
   requestAnimationFrame(animate);
 
@@ -239,10 +371,29 @@ function animate() {
     mixer.update(delta);
   }
 
-  controls.update();
+  if (isTouchDevice && modelRoot) {
+    currentRotationY += (targetRotationY - currentRotationY) * ROTATION_SMOOTHING;
+    currentRotationX += (targetRotationX - currentRotationX) * ROTATION_SMOOTHING;
+
+    modelRoot.rotation.y = currentRotationY;
+    modelRoot.rotation.x = currentRotationX;
+  }
+
+  if (controls) {
+    controls.update();
+  }
+
   renderer.render(scene, camera);
 }
 
+/* -----------------------------
+   INIT
+----------------------------- */
 setAnimationButtonState();
 loadSpaceship();
+
+if (isTouchDevice) {
+  setupMobileTouchRotation();
+}
+
 animate();
