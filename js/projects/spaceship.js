@@ -20,7 +20,7 @@ scene.background = null;
 
 const camera = new THREE.PerspectiveCamera(
   45,
-  viewer.clientWidth / viewer.clientHeight,
+  Math.max(viewer.clientWidth, 1) / Math.max(viewer.clientHeight, 1),
   0.1,
   1000
 );
@@ -52,13 +52,14 @@ controls.enableZoom = false;
 controls.rotateSpeed = 0.8;
 controls.target.set(0, 0, 0);
 
-// Desktop odmah radi
+// Desktop radi odmah
 controls.enabled = !isTouchDevice;
 
-// KLJUČNO:
-// Na touch uređajima želimo da 2 prsta rade rotate
-controls.touches.ONE = THREE.TOUCH.ROTATE;
-controls.touches.TWO = THREE.TOUCH.ROTATE;
+// Važno za touch uređaje
+if (isTouchDevice) {
+  controls.touches.ONE = THREE.TOUCH.PAN;
+  controls.touches.TWO = THREE.TOUCH.ROTATE;
+}
 
 // Ako želiš samo lijevo-desno rotaciju, odkomentiraj:
 // controls.minPolarAngle = Math.PI / 2;
@@ -75,13 +76,13 @@ function enablePageScroll() {
 }
 
 if (isTouchDevice) {
+  enablePageScroll();
+
   renderer.domElement.addEventListener(
     'touchstart',
     (e) => {
-      if (e.touches.length >= 2) {
+      if (e.touches.length === 2) {
         enableModelTouchInteraction();
-      } else {
-        enablePageScroll();
       }
     },
     { passive: true }
@@ -90,7 +91,7 @@ if (isTouchDevice) {
   renderer.domElement.addEventListener(
     'touchmove',
     (e) => {
-      if (e.touches.length >= 2) {
+      if (e.touches.length === 2) {
         enableModelTouchInteraction();
       } else {
         enablePageScroll();
@@ -102,9 +103,7 @@ if (isTouchDevice) {
   renderer.domElement.addEventListener(
     'touchend',
     (e) => {
-      if (e.touches.length >= 2) {
-        enableModelTouchInteraction();
-      } else {
+      if (e.touches.length < 2) {
         enablePageScroll();
       }
     },
@@ -203,6 +202,7 @@ function frameModel(root) {
 
   const maxDim = Math.max(size.x, size.y, size.z);
   const fov = camera.fov * (Math.PI / 180);
+
   let cameraZ = Math.abs((maxDim * 0.72) / Math.tan(fov / 2));
   cameraZ *= 1.45;
 
@@ -268,12 +268,16 @@ if (toggleAnimationBtn) {
 }
 
 window.addEventListener('resize', () => {
-  const width = viewer.clientWidth;
-  const height = viewer.clientHeight;
+  const width = Math.max(viewer.clientWidth, 1);
+  const height = Math.max(viewer.clientHeight, 1);
 
   camera.aspect = width / height;
   camera.updateProjectionMatrix();
   renderer.setSize(width, height);
+
+  if (modelRoot) {
+    frameModel(modelRoot);
+  }
 });
 
 function animate() {
