@@ -55,15 +55,28 @@ controls.enableZoom = false;
 controls.rotateSpeed = 0.8;
 controls.target.set(0, 0, 0);
 
-// Na touch uređajima potpuno ugasi interakciju s GLB modelom
+// touch uređaji: bez interakcije
 if (isTouchDevice) {
   controls.enabled = false;
   renderer.domElement.style.pointerEvents = 'none';
   renderer.domElement.style.touchAction = 'auto';
 } else {
-  controls.enabled = true;
+  // desktop: interakcija samo kad korisnik stvarno drži miš na vieweru
+  controls.enabled = false;
   renderer.domElement.style.pointerEvents = 'auto';
   renderer.domElement.style.touchAction = 'none';
+
+  viewer.addEventListener('pointerdown', () => {
+    controls.enabled = true;
+  });
+
+  window.addEventListener('pointerup', () => {
+    controls.enabled = false;
+  });
+
+  viewer.addEventListener('pointerleave', () => {
+    controls.enabled = false;
+  });
 }
 
 // Ako želiš samo lijevo-desno rotaciju, odkomentiraj:
@@ -95,6 +108,20 @@ let mixer = null;
 let actions = [];
 let isPaused = false;
 let modelRoot = null;
+let viewerIsVisible = true;
+
+const observer = new IntersectionObserver(
+  (entries) => {
+    entries.forEach((entry) => {
+      viewerIsVisible = entry.isIntersecting;
+    });
+  },
+  {
+    threshold: 0.08
+  }
+);
+
+observer.observe(viewer);
 
 function setAnimationButtonState() {
   if (!toggleAnimationBtn || !animIconPath) return;
@@ -128,6 +155,7 @@ function cleanupModel(root) {
 
     child.castShadow = false;
     child.receiveShadow = false;
+    child.frustumCulled = true;
 
     const materials = Array.isArray(child.material)
       ? child.material
@@ -215,21 +243,31 @@ if (toggleAnimationBtn) {
   });
 }
 
-window.addEventListener('resize', () => {
-  const width = Math.max(viewer.clientWidth, 1);
-  const height = Math.max(viewer.clientHeight, 1);
+let resizeRaf = null;
 
-  camera.aspect = width / height;
-  camera.updateProjectionMatrix();
-  renderer.setSize(width, height, false);
+function handleResize() {
+  if (resizeRaf) cancelAnimationFrame(resizeRaf);
 
-  if (modelRoot) {
-    frameModel(modelRoot);
-  }
-});
+  resizeRaf = requestAnimationFrame(() => {
+    const width = Math.max(viewer.clientWidth, 1);
+    const height = Math.max(viewer.clientHeight, 1);
+
+    camera.aspect = width / height;
+    camera.updateProjectionMatrix();
+    renderer.setSize(width, height, false);
+
+    if (modelRoot) {
+      frameModel(modelRoot);
+    }
+  });
+}
+
+window.addEventListener('resize', handleResize);
 
 function animate() {
   requestAnimationFrame(animate);
+
+  if (!viewerIsVisible) return;
 
   const delta = Math.min(clock.getDelta(), 0.033);
 
@@ -237,7 +275,7 @@ function animate() {
     mixer.update(delta);
   }
 
-  if (!isTouchDevice) {
+  if (!isTouchDevice && controls.enabled) {
     controls.update();
   }
 
