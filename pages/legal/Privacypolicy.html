@@ -42,18 +42,28 @@
 
 <body>
 
-  <!-- Loader Start -->
-  <div id="loader" class="loader">
-    <div class="loader__wrapper">
-      <div class="loader__content">
-        <div class="loader__count">
-          <span class="count__text">0</span>
-          <span class="count__percent">%</span>
+    <!-- Loader Start (mouse gate) -->
+    <div id="loader" class="loader" aria-hidden="false">
+      <div class="loader__wrapper">
+        <div class="loader__content">
+
+          <!-- mouse indicator -->
+          <div class="scroll-downs" aria-hidden="true">
+            <div class="mousey">
+              <div class="scroller"></div>
+            </div>
+          </div>
+
+          <!-- label changes from "Loading" to "Scroll to enter" -->
+          <p class="loader__label" id="loaderLabel">Loading experience</p>
+
+          <!-- optional: subtle helper -->
+          <p class="loader__hint" id="loaderHint">Please wait</p>
+
         </div>
       </div>
     </div>
-  </div>
-  <!-- Loader End -->
+    <!-- Loader End -->
 
   <!-- Menu & Menu Hamburger Start -->
   <nav class="mxd-nav__wrap" data-lenis-prevent="">
