@@ -1718,16 +1718,17 @@ function installTouchMoveShield() {
 
 
 /* ======================================================================
-   HXG — Optimized one-at-a-time gallery (smooth, no jank)
+   HXG — Optimized one-at-a-time gallery (smooth, mobile-ready)
    - Wheel -> horizontal (normalized + rAF accumulator + sensitivity)
-   - Pointer drag (capture)
+   - Pointer drag / swipe support
    - rAF-throttled scroll handling
-   - Snap-to-nearest after input ends (trackpad-aware)
+   - Snap-to-nearest after input ends
+   - Prevent accidental link open after drag
    - Progress bar update
    - Active slide detection (binary search; fast, stable)
    - Realistic typing (cancel-safe)
-   - Description height locked to maximum required height (no section shifting)
-   - Start typing only when section is in viewport (IntersectionObserver)
+   - Description height locked to maximum required height
+   - Start typing only when section is in viewport
    - Stable init (load + fonts.ready + ResizeObserver)
 ====================================================================== */
 
@@ -1792,6 +1793,7 @@ function installTouchMoveShield() {
   function scrollToIndex(i, behavior = 'smooth') {
     const c = cards[i];
     if (!c) return;
+
     const target = c.offsetLeft - (rail.clientWidth - c.offsetWidth) / 2;
     rail.scrollTo({ left: target, behavior });
   }
@@ -1918,6 +1920,7 @@ function installTouchMoveShield() {
 
   function stepTyping(prev = '') {
     if (!typing.running || typing.paused || typing.done) return;
+
     if (!inView) {
       pauseTyping();
       return;
@@ -1944,7 +1947,6 @@ function installTouchMoveShield() {
 
   function startTypingText(text) {
     const next = (text || '').trim();
-    if (!next) return;
 
     clearTypingTimer();
 
@@ -2098,7 +2100,6 @@ function installTouchMoveShield() {
     wheelAccum = 0;
 
     rail.scrollLeft = next;
-
     scheduleSnap(lastWheelTrackpad ? 180 : 120);
   }
 
@@ -2117,7 +2118,10 @@ function installTouchMoveShield() {
     if (e.deltaMode === 2) delta *= 80;
 
     lastWheelTrackpad = isLikelyTrackpad(e);
-    const sens = lastWheelTrackpad ? WHEEL_SENSITIVITY_TRACKPAD : WHEEL_SENSITIVITY_MOUSE;
+    const sens = lastWheelTrackpad
+      ? WHEEL_SENSITIVITY_TRACKPAD
+      : WHEEL_SENSITIVITY_MOUSE;
+
     delta *= sens;
 
     e.preventDefault();
@@ -2133,6 +2137,7 @@ function installTouchMoveShield() {
   let startLeft = 0;
   let dragId = 0;
   let moved = 0;
+  let suppressClick = false;
 
   function onPointerDown(e) {
     if (e.pointerType === 'mouse' && e.button !== 0) return;
@@ -2140,6 +2145,7 @@ function installTouchMoveShield() {
     dragging = true;
     dragId = e.pointerId;
     moved = 0;
+    suppressClick = false;
     startX = e.clientX;
     startLeft = rail.scrollLeft;
 
@@ -2148,6 +2154,10 @@ function installTouchMoveShield() {
     try {
       rail.setPointerCapture(dragId);
     } catch {}
+
+    if (e.pointerType !== 'mouse') {
+      e.preventDefault();
+    }
   }
 
   function onPointerMove(e) {
@@ -2155,6 +2165,10 @@ function installTouchMoveShield() {
 
     const dx = e.clientX - startX;
     moved = Math.max(moved, Math.abs(dx));
+
+    if (moved > 6) {
+      suppressClick = true;
+    }
 
     const max = maxScrollLeft();
     rail.scrollLeft = clamp(startLeft - dx, 0, max);
@@ -2170,16 +2184,30 @@ function installTouchMoveShield() {
       rail.releasePointerCapture(dragId);
     } catch {}
 
-    if (moved > 6) scheduleSnap(140);
+    if (moved > 6) {
+      scheduleSnap(140);
+    }
   }
 
-  rail.addEventListener('pointerdown', onPointerDown, { passive: true });
+  rail.addEventListener('pointerdown', onPointerDown, { passive: false });
   rail.addEventListener('pointermove', onPointerMove, { passive: true });
   rail.addEventListener('pointerup', onPointerUp, { passive: true });
   rail.addEventListener('pointercancel', onPointerUp, { passive: true });
 
+  rail.addEventListener(
+    'click',
+    (e) => {
+      if (!suppressClick) return;
+      e.preventDefault();
+      e.stopPropagation();
+      suppressClick = false;
+    },
+    true
+  );
+
   cards.forEach((card, index) => {
     card.addEventListener('click', () => {
+      if (suppressClick) return;
       scrollToIndex(index, 'smooth');
     });
   });
@@ -2219,6 +2247,7 @@ function installTouchMoveShield() {
 
         if (inView) {
           startHXG();
+
           requestAnimationFrame(() => {
             centers = cardCenters();
             lockDescHeightToMax();
