@@ -29,10 +29,11 @@ camera.position.set(0, 1.2, 6);
 
 const renderer = new THREE.WebGLRenderer({
   antialias: true,
-  alpha: true
+  alpha: true,
+  powerPreference: 'high-performance'
 });
 
-renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.8));
 renderer.setSize(viewer.clientWidth, viewer.clientHeight);
 renderer.outputColorSpace = THREE.SRGBColorSpace;
 renderer.setClearColor(0x000000, 0);
@@ -40,97 +41,41 @@ renderer.setClearColor(0x000000, 0);
 renderer.domElement.style.display = 'block';
 renderer.domElement.style.width = '100%';
 renderer.domElement.style.height = '100%';
-renderer.domElement.style.touchAction = isTouchDevice ? 'pan-y' : 'none';
+renderer.domElement.style.touchAction = isTouchDevice ? 'none' : 'none';
 
 viewer.appendChild(renderer.domElement);
 
 const controls = new OrbitControls(camera, renderer.domElement);
+controls.enabled = true;
 controls.enableDamping = true;
-controls.dampingFactor = 0.06;
+controls.dampingFactor = isTouchDevice ? 0.09 : 0.06;
 controls.enablePan = false;
 controls.enableZoom = false;
-controls.rotateSpeed = 0.8;
+controls.rotateSpeed = isTouchDevice ? 0.65 : 0.8;
 controls.target.set(0, 0, 0);
 
-// Desktop radi odmah
-controls.enabled = !isTouchDevice;
-
-// Važno za touch uređaje
+// stabilnije ponašanje na touch uređajima
 if (isTouchDevice) {
-  controls.touches.ONE = THREE.TOUCH.PAN;
-  controls.touches.TWO = THREE.TOUCH.ROTATE;
+  controls.touches.ONE = THREE.TOUCH.ROTATE;
+  controls.touches.TWO = THREE.TOUCH.DOLLY_PAN;
 }
 
-// Ako želiš samo lijevo-desno rotaciju, odkomentiraj:
+// ako želiš samo lijevo-desno rotaciju:
 // controls.minPolarAngle = Math.PI / 2;
 // controls.maxPolarAngle = Math.PI / 2;
 
-function enableModelTouchInteraction() {
-  controls.enabled = true;
-  renderer.domElement.style.touchAction = 'none';
-}
-
-function enablePageScroll() {
-  controls.enabled = false;
-  renderer.domElement.style.touchAction = 'pan-y';
-}
-
-if (isTouchDevice) {
-  enablePageScroll();
-
-  renderer.domElement.addEventListener(
-    'touchstart',
-    (e) => {
-      if (e.touches.length === 2) {
-        enableModelTouchInteraction();
-      }
-    },
-    { passive: true }
-  );
-
-  renderer.domElement.addEventListener(
-    'touchmove',
-    (e) => {
-      if (e.touches.length === 2) {
-        enableModelTouchInteraction();
-      } else {
-        enablePageScroll();
-      }
-    },
-    { passive: true }
-  );
-
-  renderer.domElement.addEventListener(
-    'touchend',
-    (e) => {
-      if (e.touches.length < 2) {
-        enablePageScroll();
-      }
-    },
-    { passive: true }
-  );
-
-  renderer.domElement.addEventListener(
-    'touchcancel',
-    () => {
-      enablePageScroll();
-    },
-    { passive: true }
-  );
-}
-
-const ambientLight = new THREE.AmbientLight(0xffffff, 2.4);
+const ambientLight = new THREE.AmbientLight(0xffffff, 2.2);
 scene.add(ambientLight);
 
-const keyLight = new THREE.DirectionalLight(0xffffff, 3.0);
+const keyLight = new THREE.DirectionalLight(0xffffff, 2.8);
 keyLight.position.set(6, 7, 10);
 scene.add(keyLight);
 
-const rimLight = new THREE.DirectionalLight(0xaec8ff, 1.8);
+const rimLight = new THREE.DirectionalLight(0xaec8ff, 1.6);
 rimLight.position.set(-8, 4, -8);
 scene.add(rimLight);
 
-const fillLight = new THREE.PointLight(0x88ccff, 1.4, 25);
+const fillLight = new THREE.PointLight(0x88ccff, 1.2, 25);
 fillLight.position.set(0, -1, 3);
 scene.add(fillLight);
 
@@ -177,19 +122,17 @@ function cleanupModel(root) {
 
     child.castShadow = false;
     child.receiveShadow = false;
+    child.frustumCulled = true;
 
-    const material = child.material;
+    const materials = Array.isArray(child.material)
+      ? child.material
+      : [child.material];
 
-    if (Array.isArray(material)) {
-      material.forEach((mat) => {
-        if (!mat) return;
-        if ('envMapIntensity' in mat) mat.envMapIntensity = 1.2;
-        mat.needsUpdate = true;
-      });
-    } else if (material) {
-      if ('envMapIntensity' in material) material.envMapIntensity = 1.2;
-      material.needsUpdate = true;
-    }
+    materials.forEach((mat) => {
+      if (!mat) return;
+      if ('envMapIntensity' in mat) mat.envMapIntensity = 1.15;
+      mat.needsUpdate = true;
+    });
   });
 }
 
@@ -202,9 +145,8 @@ function frameModel(root) {
 
   const maxDim = Math.max(size.x, size.y, size.z);
   const fov = camera.fov * (Math.PI / 180);
-
   let cameraZ = Math.abs((maxDim * 0.72) / Math.tan(fov / 2));
-  cameraZ *= 1.45;
+  cameraZ *= isTouchDevice ? 1.6 : 1.45;
 
   camera.position.set(0, Math.max(maxDim * 0.2, 0.9), cameraZ);
   controls.target.set(0, 0, 0);
@@ -267,23 +209,31 @@ if (toggleAnimationBtn) {
   });
 }
 
-window.addEventListener('resize', () => {
-  const width = Math.max(viewer.clientWidth, 1);
-  const height = Math.max(viewer.clientHeight, 1);
+let resizeRaf = null;
 
-  camera.aspect = width / height;
-  camera.updateProjectionMatrix();
-  renderer.setSize(width, height);
+function handleResize() {
+  if (resizeRaf) cancelAnimationFrame(resizeRaf);
 
-  if (modelRoot) {
-    frameModel(modelRoot);
-  }
-});
+  resizeRaf = requestAnimationFrame(() => {
+    const width = Math.max(viewer.clientWidth, 1);
+    const height = Math.max(viewer.clientHeight, 1);
+
+    camera.aspect = width / height;
+    camera.updateProjectionMatrix();
+    renderer.setSize(width, height, false);
+
+    if (modelRoot) {
+      frameModel(modelRoot);
+    }
+  });
+}
+
+window.addEventListener('resize', handleResize);
 
 function animate() {
   requestAnimationFrame(animate);
 
-  const delta = clock.getDelta();
+  const delta = Math.min(clock.getDelta(), 0.033);
 
   if (mixer && !isPaused) {
     mixer.update(delta);
