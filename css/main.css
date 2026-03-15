@@ -7281,104 +7281,146 @@ html[color-scheme="dark"] .mxd-logo__image {
   overflow: hidden;
 }
 
-  /*GLB MODEL*/
+/* GLB MODEL */
 
-  .spaceship-viewer-wrap {
-    position: absolute;
-    inset: 0;
-  }
+.spaceship-viewer-wrap {
+  position: absolute;
+  inset: 0;
+}
 
-  #viewer {
-    position: absolute;
-    inset: 0;
-  }
+#viewer {
+  position: absolute;
+  inset: 0;
+}
 
-  #viewer > canvas {
-    display: block;
-  }
+#viewer > canvas {
+  display: block;
+}
+
+/* PAUSE BUTTON */
+
+.spaceship-viewer-controls {
+  position: absolute;
+  left: 50%;
+  bottom: 74px;
+  transform: translateX(-50%);
+  z-index: 3;
+}
+
+.spaceship-toggle-btn {
+  appearance: none;
+  border: 1px solid rgba(17, 206, 227, 0.45);
+  background: rgba(8, 18, 26, 0.34);
+  color: #11cee3;
+  width: 35px;
+  height: 35px;
+  border-radius: 999px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+
+  box-shadow:
+    0 0 0 1px rgba(17, 206, 227, 0.08) inset,
+    0 0 18px rgba(17, 206, 227, 0.16),
+    0 0 36px rgba(17, 206, 227, 0.08);
+
+  transition:
+    transform 0.28s ease,
+    box-shadow 0.28s ease,
+    border-color 0.28s ease,
+    background 0.28s ease,
+    color 0.28s ease;
+}
+
+.spaceship-toggle-btn:hover {
+  transform: translateY(-2px) scale(1.03);
+  background: rgba(8, 22, 30, 0.52);
+  border-color: rgba(17, 206, 227, 0.75);
+
+  box-shadow:
+    0 0 0 1px rgba(17, 206, 227, 0.18) inset,
+    0 0 24px rgba(17, 206, 227, 0.24),
+    0 0 48px rgba(17, 206, 227, 0.14);
+}
+
+.spaceship-toggle-btn__icon {
+  width: 28px;
+  height: 28px;
+  fill: currentColor;
+}
+
+/* HELP BAR */
+
+.spaceship-viewer-helpbar {
+  position: absolute;
+  left: 50%;
+  bottom: 24px;
+  transform: translateX(-50%);
+  z-index: 2;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+
+  padding: 10px 16px;
+  border-radius: 999px;
+
+  background: rgba(8, 18, 26, 0.42);
+  border: 1px solid rgba(17, 206, 227, 0.18);
+
+  backdrop-filter: blur(12px);
+
+  box-shadow:
+    0 0 0 1px rgba(17, 206, 227, 0.04) inset,
+    0 10px 30px rgba(0, 0, 0, 0.22);
+
+  pointer-events: none;
+  user-select: none;
+}
+
+.help-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  color: rgba(255,255,255,0.9);
+}
+
+.help-chip__icon {
+  width: 15px;
+  height: 15px;
+  fill: #11cee3;
+}
+
+.help-separator {
+  width: 1px;
+  height: 12px;
+  background: rgba(255,255,255,0.18);
+}
+
+/* MOBILE */
+
+@media (max-width:768px) {
 
   .spaceship-viewer-controls {
-    position: absolute;
-    left: 50%;
-    bottom: 20px;
-    transform: translateX(-50%);
-    z-index: 3;
+    bottom: 70px;
   }
 
-  .spaceship-viewer-controls {
-    position: absolute;
-    left: 50%;
-    bottom: 24px;
-    transform: translateX(-50%);
-    z-index: 3;
+  .spaceship-viewer-helpbar {
+    bottom: 16px;
+    padding: 8px 12px;
+    gap: 8px;
+    overflow-x: auto;
   }
 
-  .spaceship-toggle-btn {
-    appearance: none;
-    border: 1px solid rgba(17, 206, 227, 0.45);
-    background: rgba(8, 18, 26, 0.34);
-    color: #11cee3;
-    width: 35px;
-    height: 35px;
-    border-radius: 999px;
-    cursor: pointer;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    padding: 0;
-    backdrop-filter: blur(14px);
-    -webkit-backdrop-filter: blur(14px);
-    box-shadow:
-      0 0 0 1px rgba(17, 206, 227, 0.08) inset,
-      0 0 18px rgba(17, 206, 227, 0.16),
-      0 0 36px rgba(17, 206, 227, 0.08);
-    transition:
-      transform 0.28s ease,
-      box-shadow 0.28s ease,
-      border-color 0.28s ease,
-      background 0.28s ease,
-      color 0.28s ease;
+  .help-chip {
+    font-size: 11px;
   }
 
-  .spaceship-toggle-btn:hover {
-    transform: translateY(-2px) scale(1.03);
-    background: rgba(8, 22, 30, 0.52);
-    border-color: rgba(17, 206, 227, 0.75);
-    box-shadow:
-      0 0 0 1px rgba(17, 206, 227, 0.18) inset,
-      0 0 24px rgba(17, 206, 227, 0.24),
-      0 0 48px rgba(17, 206, 227, 0.14);
-  }
+}
 
-  .spaceship-toggle-btn:active {
-    transform: translateY(0) scale(0.98);
-  }
-
-  .spaceship-toggle-btn:disabled {
-    opacity: 0.45;
-    cursor: not-allowed;
-    box-shadow: none;
-  }
-
-  .spaceship-toggle-btn__inner {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 100%;
-    height: 100%;
-    border-radius: inherit;
-  }
-
-  .spaceship-toggle-btn__icon {
-    width: 28px;
-    height: 28px;
-    display: block;
-    fill: currentColor;
-    filter: drop-shadow(0 0 8px rgba(17, 206, 227, 0.35));
-    transition: transform 0.25s ease, filter 0.25s ease;
-  }
-
-  .spaceship-toggle-btn:hover .spaceship-toggle-btn__icon {
-    transform: scale(1.08);
-    filter: drop-shadow(0 0 12px rgba(17, 206, 227, 0.55));
-  }

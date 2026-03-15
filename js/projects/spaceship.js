@@ -13,6 +13,9 @@ if (!viewer) {
   throw new Error('Element #viewer nije pronađen.');
 }
 
+const isTouchDevice =
+  'ontouchstart' in window || navigator.maxTouchPoints > 0;
+
 const scene = new THREE.Scene();
 scene.background = null;
 
@@ -29,10 +32,17 @@ const renderer = new THREE.WebGLRenderer({
   antialias: true,
   alpha: true
 });
+
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 renderer.setSize(viewer.clientWidth, viewer.clientHeight);
 renderer.outputColorSpace = THREE.SRGBColorSpace;
 renderer.setClearColor(0x000000, 0);
+
+// Važno za mobilni scroll
+renderer.domElement.style.display = 'block';
+renderer.domElement.style.width = '100%';
+renderer.domElement.style.height = '100%';
+renderer.domElement.style.touchAction = 'pan-y';
 
 viewer.appendChild(renderer.domElement);
 
@@ -44,9 +54,49 @@ controls.enableZoom = false;
 controls.rotateSpeed = 0.8;
 controls.target.set(0, 0, 0);
 
+// Desktop radi odmah, touch uređaji samo s 2 prsta
+controls.enabled = !isTouchDevice;
+
 // Ako želiš samo lijevo-desno rotaciju, odkomentiraj:
 // controls.minPolarAngle = Math.PI / 2;
 // controls.maxPolarAngle = Math.PI / 2;
+
+function updateControlsForTouch(touchCount) {
+  if (!isTouchDevice) return;
+  controls.enabled = touchCount >= 2;
+}
+
+renderer.domElement.addEventListener(
+  'touchstart',
+  (e) => {
+    updateControlsForTouch(e.touches.length);
+  },
+  { passive: true }
+);
+
+renderer.domElement.addEventListener(
+  'touchmove',
+  (e) => {
+    updateControlsForTouch(e.touches.length);
+  },
+  { passive: true }
+);
+
+renderer.domElement.addEventListener(
+  'touchend',
+  (e) => {
+    updateControlsForTouch(e.touches.length);
+  },
+  { passive: true }
+);
+
+renderer.domElement.addEventListener(
+  'touchcancel',
+  () => {
+    if (isTouchDevice) controls.enabled = false;
+  },
+  { passive: true }
+);
 
 const ambientLight = new THREE.AmbientLight(0xffffff, 2.4);
 scene.add(ambientLight);
