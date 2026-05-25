@@ -4,49 +4,67 @@
 <head>
   <meta charset="UTF-8" />
 
-  <title>Intergalactic Spaceship — 3D GLB Viewer</title>
+  <title>Wavebreaker - Real-Time Ocean Simulation Experience</title>
 
-  <meta name="description" content="Intergalactic Spaceship is a real-time 3D web experience built around an animated GLB model. The project combines smooth camera controls, interactive model rotation, playback control and a cinematic sci-fi presentation optimized for the web.">
-  <meta name="keywords" content="Intergalactic Spaceship, GLB Viewer, Three.js, 3D Web, WebGL, Animated GLB Model, Orbit Controls, Real-Time 3D, Sci-Fi Spaceship, Portfolio Project">
+  <meta name="description" content="Wavebreaker is a cinematic real-time ocean experience built with Three.js and WebGL. The project combines dynamic wave movement, atmospheric lighting, smooth camera interaction and an immersive browser-based presentation.">
+
+  <meta name="keywords" content="Wavebreaker, Ocean Simulation, Three.js, WebGL, Real-Time Waves, Interactive Ocean, Dynamic Water, 3D Web Experience, Browser Rendering, Portfolio Project">
+
   <meta name="author" content="Armin Lisic">
 
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
 
   <meta name="color-scheme" content="dark">
-  <meta name="theme-color" content="#0b0f19">
-  <meta name="msapplication-navbutton-color" content="#0b0f19">
+  <meta name="theme-color" content="#08121d">
+  <meta name="msapplication-navbutton-color" content="#08121d">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black">
 
   <link rel="icon" href="/assets/img/favicon/favicon.ico" sizes="any">
   <link rel="apple-touch-icon" href="/assets/img/favicon/apple-touch-icon.png">
 
+  <!-- Open Graph -->
   <meta property="og:type" content="website">
-  <meta property="og:title" content="Intergalactic Spaceship — 3D GLB Viewer">
-  <meta property="og:description" content="A cinematic web-based 3D viewer featuring an animated intergalactic spaceship model, orbit controls and real-time playback interaction.">
-  <meta property="og:url" content="https://armin-lisic-portfolio.netlify.app/pages/spaceship.html">
-  <meta property="og:image" content="/assets/img/og-images/spaceship-viewer.jpg">
+  <meta property="og:title" content="Wavebreaker — Real-Time Ocean Simulation Experience">
+
+  <meta property="og:description"
+        content="An immersive web-based ocean experience featuring real-time wave movement, atmospheric visuals and cinematic rendering powered by Three.js and WebGL.">
+
+  <meta property="og:url"
+        content="https://armin-lisic-portfolio.netlify.app/pages/wavebreaker.html">
+
+  <meta property="og:image"
+        content="/assets/img/og-images/wavebreaker-preview.jpg">
+
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
 
+  <!-- Twitter -->
   <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="Intergalactic Spaceship — 3D GLB Viewer">
-  <meta name="twitter:description" content="A real-time 3D spaceship experience built with Three.js and an animated GLB model.">
-  <meta name="twitter:image" content="/assets/img/og-images/spaceship-viewer.jpg">
+
+  <meta name="twitter:title"
+        content="Wavebreaker — Real-Time Ocean Simulation Experience">
+
+  <meta name="twitter:description"
+        content="A cinematic real-time ocean experience built with Three.js, dynamic wave movement and interactive browser rendering.">
+
+  <meta name="twitter:image"
+        content="/assets/img/og-images/wavebreaker-preview.jpg">
 
   <link rel="stylesheet" href="/css/loaders/loader.css">
   <link rel="stylesheet" href="/css/plugins.css">
   <link rel="stylesheet" href="/css/main.css">
 
   <script type="importmap">
-    {
-      "imports": {
-        "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
-        "three/examples/jsm/": "https://unpkg.com/three@0.160.0/examples/jsm/"
-      }
+  {
+    "imports": {
+      "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+      "three/examples/jsm/": "https://unpkg.com/three@0.160.0/examples/jsm/"
     }
+  }
   </script>
+
 </head>
 
 <body>
@@ -135,7 +153,7 @@
                         <a href="/pages/engine.html">3D Engine</a>
                       </li>
                       <li class="submenu__item">
-                        <a href="/pages/spaceship.html">Intergalactic spaceship</a>
+                        <a href="/pages/wavebreaker.html">Wavebreaker</a>
                       </li>
                     </ul>
                   </li>
@@ -214,12 +232,12 @@
   </header>
   <!-- Header End -->
 
-  <!-- Page Content Start -->
+
   <main id="mxd-page-content" class="mxd-page-content inner-page-content">
 
     <!-- Section - Inner Page Headline Start -->
     <div class="mxd-section mxd-section-inner-headline padding-text-pre-block">
-     <canvas id="canvas"></canvas>
+      <canvas id="canvas"></canvas>
       <div class="mxd-container grid-container">
 
         <div class="mxd-block loading-wrap">
@@ -228,8 +246,7 @@
 
               <div class="col-12 col-xl-2 mxd-grid-item no-margin">
                 <div class="mxd-block__name name-inner-headline loading__item">
-                  <p class="mxd-point-subtitle">
-                  </p>
+                  <p class="mxd-point-subtitle"></p>
                 </div>
               </div>
 
@@ -238,16 +255,17 @@
                   <div class="mxd-block__inner-headline">
                     <h1 class="inner-headline__title animated-type loading__item">
                       <span id="typed-strings">
-                        <b>Intergalactic</b>
-                        <b>Spaceship</b>
-                        <b>GLB Viewer</b>
+                        <b>Wavebreaker</b>
+                        <b>Ocean simulation</b>
+                        <b>Three.js</b>
                       </span>
                       <span id="typed"></span>
                     </h1>
 
                     <p class="inner-headline__text t-large t-bright loading__item">
-                      A cinematic real-time 3D spaceship experience built around an animated GLB model.
-                      The project combines smooth orbit controls, model playback, web optimization and a premium sci-fi presentation designed for portfolio use.
+                      A cinematic real-time ocean experience built with Three.js and WebGL.
+                      The project combines dynamic wave movement, atmospheric lighting,
+                      smooth interaction and a polished browser-based presentation.
                     </p>
                   </div>
                 </div>
@@ -298,15 +316,16 @@
                         <div class="mxd-res-list__content">
                           <div class="mxd-res-list__data">
                             <div class="mxd-res-list__title">
-                              <h4 class="anim-uni-in-up">Asset preparation</h4>
+                              <h4 class="anim-uni-in-up">Ocean scene concept</h4>
                               <p class="mxd-res-list__source anim-uni-in-up">
-                                imported and refined
-                                <a href="https://free3d.com/" target="_blank">3D spaceship asset</a>
+                                cinematic web experience powered by
+                                <a href="https://threejs.org/" target="_blank">Three.js</a>
                               </p>
                             </div>
                             <div class="mxd-res-list__descr">
                               <p class="anim-uni-in-up">
-                                Selected the spaceship asset, opened it in Blender, reviewed textures, removed the unnecessary Shield mesh and prepared the scene for a clean GLB export.
+                                Designed the Wavebreaker concept around a strong ocean atmosphere, dynamic water movement
+                                and a clean visual direction suitable for a modern portfolio presentation.
                               </p>
                             </div>
                           </div>
@@ -322,15 +341,16 @@
                         <div class="mxd-res-list__content">
                           <div class="mxd-res-list__data">
                             <div class="mxd-res-list__title">
-                              <h4 class="anim-uni-in-up">Web viewer integration</h4>
+                              <h4 class="anim-uni-in-up">Real-time wave system</h4>
                               <p class="mxd-res-list__source anim-uni-in-up">
-                                Three.js implementation for
+                                WebGL rendering for
                                 <a href="https://github.com/Armin-000" target="_blank">portfolio showcase</a>
                               </p>
                             </div>
                             <div class="mxd-res-list__descr">
                               <p class="anim-uni-in-up">
-                                Built a dedicated browser-based 3D scene with camera setup, orbit controls, responsive layout and automatic centering so the spaceship feels polished and easy to explore.
+                                Built a browser-based ocean scene with animated water behavior, responsive camera setup,
+                                real-time rendering and smooth interaction directly inside the web page.
                               </p>
                             </div>
                           </div>
@@ -346,15 +366,16 @@
                         <div class="mxd-res-list__content">
                           <div class="mxd-res-list__data">
                             <div class="mxd-res-list__title">
-                              <h4 class="anim-uni-in-up">Animation playback & polish</h4>
+                              <h4 class="anim-uni-in-up">Atmosphere & polish</h4>
                               <p class="mxd-res-list__source anim-uni-in-up">
-                                interaction layer for
-                                <a href="https://github.com/Armin-000" target="_blank">spaceship viewer</a>
+                                cinematic presentation for
+                                <a href="http://wavebreaker.alphawave.hr/" target="_blank">live experience</a>
                               </p>
                             </div>
                             <div class="mxd-res-list__descr">
                               <p class="anim-uni-in-up">
-                                Connected the exported GLB animation to the web scene and added playback control so users can pause and resume the spaceship animation directly on the page.
+                                Refined the experience with cinematic lighting, ocean mood, visual depth and a clean layout
+                                so the project feels more like an interactive scene than a static technical demo.
                               </p>
                             </div>
                           </div>
@@ -368,10 +389,10 @@
                     </div>
 
                     <div class="engine-timeline-cta">
-                      <a href="/pages/spaceshiplive.html"
+                      <a href="http://wavebreaker.alphawave.hr/"
                         target="_blank"
                         class="btn btn-anim btn-default slide-right-up">
-                        <span class="btn-caption">Launch full viewer</span>
+                        <span class="btn-caption">Launch live experience</span>
                         <i class="ph-bold ph-arrow-up-right"></i>
                       </a>
                     </div>
@@ -404,10 +425,13 @@
                 <div class="mxd-project__content">
                   <div class="mxd-project__paragraph medium-text">
                     <p class="anim-uni-in-up">
-                      This project transforms a static downloadable 3D asset into a complete interactive web presentation. Instead of simply showing screenshots, the page lets visitors inspect the model directly in real time.
+                      Wavebreaker is an interactive real-time ocean experience created for the web.
+                      Instead of presenting a simple static visual, the project focuses on motion,
+                      atmosphere and direct user interaction inside a browser-based 3D scene.
                     </p>
                     <p class="anim-uni-in-up">
-                      The focus was not only on rendering the model, but also on making the experience feel clean, responsive and portfolio-ready, with attention to structure, performance and visual clarity.
+                      The goal was to create a polished portfolio showcase that demonstrates WebGL rendering,
+                      animated water movement, responsive layout behavior and a cinematic visual direction.
                     </p>
                   </div>
                 </div>
@@ -428,10 +452,13 @@
                 <div class="mxd-project__content">
                   <div class="mxd-project__paragraph medium-text">
                     <p class="anim-uni-in-up">
-                      The spaceship is loaded as a GLB model and rendered with Three.js inside a dedicated viewer container. Camera controls allow the user to rotate, zoom and inspect the scene while maintaining a stable, centered presentation.
+                      The scene is rendered with Three.js and WebGL, using a dedicated canvas for the real-time
+                      ocean experience. The water surface is animated continuously to create a stronger sense
+                      of motion and depth.
                     </p>
                     <p class="anim-uni-in-up">
-                      The exported Blender animation is played with an animation mixer, while a simple UI button gives the visitor direct control over pausing and resuming playback.
+                      Camera interaction allows visitors to explore the scene smoothly, while lighting,
+                      environment settings and visual effects help create a more atmospheric ocean presentation.
                     </p>
                   </div>
                 </div>
@@ -452,14 +479,15 @@
                 <div class="mxd-project__content">
                   <div class="mxd-project__paragraph medium-text">
                     <p class="anim-uni-in-up">
-                      • Real-time GLB model rendering<br>
-                      • Smooth orbit, zoom and interaction controls<br>
-                      • Exported Blender animation playback on the web<br>
-                      • Pause / resume animation button for the user<br>
-                      • Clean sci-fi presentation adapted for portfolio projects
+                      • Real-time ocean rendering with Three.js<br>
+                      • Dynamic wave movement and animated water surface<br>
+                      • Cinematic lighting and atmospheric visual style<br>
+                      • Smooth camera interaction for browser exploration<br>
+                      • Responsive layout designed for a portfolio showcase
                     </p>
                     <p class="anim-uni-in-up">
-                      The project also includes asset cleanup work, because the original file required removing an unwanted Shield mesh before the final model was ready for a clean browser presentation.
+                      The project combines technical rendering work with visual presentation, making the ocean scene
+                      feel immersive, modern and suitable for a professional web portfolio.
                     </p>
                   </div>
                 </div>
@@ -480,10 +508,12 @@
                 <div class="mxd-project__content">
                   <div class="mxd-project__paragraph medium-text">
                     <p class="anim-uni-in-up">
-                      The long-term goal is to evolve this spaceship page into a more cinematic 3D presentation with stronger environment lighting, more advanced material polish and an even more immersive landing experience.
+                      The long-term vision is to evolve Wavebreaker into a richer cinematic ocean experience with
+                      stronger wave behavior, more detailed environmental effects and deeper interaction.
                     </p>
                     <p class="anim-uni-in-up">
-                      Future improvements could include a background starfield, glow thrusters, auto-idle movement, camera presets and a dedicated fullscreen mode for a stronger sci-fi showcase.
+                      Future improvements could include stronger storm conditions, weather-driven wave changes,
+                      foam effects, enhanced sky lighting, camera presets and a dedicated fullscreen experience.
                     </p>
                   </div>
                 </div>
@@ -495,30 +525,29 @@
       </div>
     </div>
 
-    <!-- Section - Spaceship Showcase Start -->
+    <!-- Section - Wavebreaker Showcase Start -->
     <div class="mxd-section padding-grid-pre-mtext">
       <div class="mxd-container grid-container">
 
-        <!-- Project Block - Overview Start -->
         <div class="mxd-project__block">
           <div class="container-fluid px-0">
             <div class="row gx-0">
               <div class="col-12 col-xl-5 mxd-grid-item no-margin">
                 <div class="mxd-project__subtitle">
-                  <h2 class="reveal-type anim-uni-in-up">Spaceship gallery</h2>
+                  <h2 class="reveal-type anim-uni-in-up">Wavebreaker gallery</h2>
                 </div>
               </div>
               <div class="col-12 col-xl-6 mxd-grid-item no-margin">
                 <div class="mxd-project__content">
                   <div class="mxd-project__paragraph medium-text">
                     <p class="anim-uni-in-up">
-                      This section presents the spaceship project through a more immersive visual showcase, focused on form,
-                      animation, and browser-based presentation. Instead of a simple static gallery, the layout is designed
-                      to make each stage of the model feel deliberate and cinematic.
+                      This section presents Wavebreaker through a cinematic visual showcase focused on ocean motion,
+                      atmosphere and real-time web rendering. The layout is designed to highlight the project as an
+                      immersive browser experience rather than a simple static preview.
                     </p>
                     <p class="anim-uni-in-up">
-                      The goal is to highlight both the artistic side of the spaceship and the technical work behind it,
-                      including real-time rendering, motion, and clean web integration inside the portfolio environment.
+                      The goal is to show both the visual mood of the ocean and the technical work behind it,
+                      including animation, interaction, lighting and clean integration inside the portfolio.
                     </p>
                   </div>
                 </div>
@@ -526,7 +555,6 @@
             </div>
           </div>
         </div>
-        <!-- Project Block - Overview End -->
 
         <!-- Section - Pinned Showcase Start -->
         <div class="mxd-section padding-pinned-img-pre-mtext">
@@ -539,13 +567,13 @@
                   <div class="mxd-pinned__img-wrap">
                     <div class="mxd-pinned__img-list" role="list">
                       <div class="mxd-pinned__img-item" role="listitem">
-                        <img class="mxd-pinned__img" src="/assets/img/backgrounds/spaceship.png" alt="Spaceship model profile view">
+                        <img class="mxd-pinned__img" src="/assets/img/backgrounds/wavebreaker2.webp" alt="Wavebreaker ocean preview">
                       </div>
                       <div class="mxd-pinned__img-item" role="listitem">
-                        <img class="mxd-pinned__img" src="/assets/img/backgrounds/spaceship2.png" alt="Spaceship animation view">
+                        <img class="mxd-pinned__img" src="/assets/img/backgrounds/wavebreaker3.webp" alt="Wavebreaker wave simulation view">
                       </div>
                       <div class="mxd-pinned__img-item" role="listitem">
-                        <img class="mxd-pinned__img" src="/assets/img/backgrounds/spaceship3.png" alt="Spaceship web implementation view">
+                        <img class="mxd-pinned__img" src="/assets/img/backgrounds/wavebreaker4.webp" alt="Wavebreaker web implementation view">
                       </div>
                     </div>
                   </div>
@@ -557,70 +585,67 @@
 
                       <div class="mxd-pinned__text-item" role="listitem">
                         <div class="mxd-pinned__img-mobile anim-uni-in-up">
-                          <img src="/assets/img/backgrounds/spaceship.png" alt="Spaceship model profile view">
+                          <img src="/assets/img/backgrounds/wavebreaker2.webp" alt="Wavebreaker ocean preview">
                         </div>
 
                         <h2 class="mxd-pinned__title h2-small anim-uni-in-up">
-                          Ship profile
+                          Ocean atmosphere
                         </h2>
 
                         <div class="mxd-pinned__tags">
-                          <span class="tag tag-default tag-outline anim-uni-in-up">Form Study</span>
-                          <span class="tag tag-default tag-outline anim-uni-in-up">3D Model</span>
-                          <span class="tag tag-default tag-outline anim-uni-in-up">Presentation</span>
+                          <span class="tag tag-default tag-outline anim-uni-in-up">Ocean Scene</span>
+                          <span class="tag tag-default tag-outline anim-uni-in-up">Cinematic Mood</span>
+                          <span class="tag tag-default tag-outline anim-uni-in-up">WebGL</span>
                           <span class="tag tag-default tag-outline anim-uni-in-up">Visual Focus</span>
                         </div>
 
                         <p class="anim-uni-in-up">
-                          The viewer opens with a clean presentation of the spaceship model, placing emphasis on silhouette,
-                          proportions, and overall structure. This first stage is designed to make the model feel refined,
-                          readable, and visually strong within the page layout.
+                          The experience opens with a cinematic ocean scene focused on mood, depth and movement.
+                          The visual direction is built to feel clean, atmospheric and strong within the portfolio layout.
                         </p>
                       </div>
 
                       <div class="mxd-pinned__text-item" role="listitem">
                         <div class="mxd-pinned__img-mobile anim-uni-in-up">
-                          <img src="/assets/img/backgrounds/spaceship2.png" alt="Spaceship animation view">
+                          <img src="/assets/img/backgrounds/wavebreaker3.webp" alt="Wavebreaker wave simulation view">
                         </div>
 
                         <h2 class="mxd-pinned__title h2-small anim-uni-in-up">
-                          Live animation
+                          Dynamic waves
                         </h2>
 
                         <div class="mxd-pinned__tags">
-                          <span class="tag tag-default tag-outline anim-uni-in-up">Motion Layer</span>
-                          <span class="tag tag-default tag-outline anim-uni-in-up">Interactive Scene</span>
-                          <span class="tag tag-default tag-outline anim-uni-in-up">Real-Time Feel</span>
+                          <span class="tag tag-default tag-outline anim-uni-in-up">Wave Motion</span>
+                          <span class="tag tag-default tag-outline anim-uni-in-up">Real-Time Scene</span>
+                          <span class="tag tag-default tag-outline anim-uni-in-up">Water System</span>
+                          <span class="tag tag-default tag-outline anim-uni-in-up">Interaction</span>
+                        </div>
+
+                        <p class="anim-uni-in-up">
+                          Animated wave movement gives the scene a living feeling and makes the experience more immersive.
+                          Instead of a flat static background, the water becomes the main visual element of the project.
+                        </p>
+                      </div>
+
+                      <div class="mxd-pinned__text-item" role="listitem">
+                        <div class="mxd-pinned__img-mobile anim-uni-in-up">
+                          <img src="/assets/img/backgrounds/wavebreaker4.webp" alt="Wavebreaker web implementation view">
+                        </div>
+
+                        <h2 class="mxd-pinned__title h2-small anim-uni-in-up">
+                          Browser experience
+                        </h2>
+
+                        <div class="mxd-pinned__tags">
+                          <span class="tag tag-default tag-outline anim-uni-in-up">Three.js</span>
+                          <span class="tag tag-default tag-outline anim-uni-in-up">Browser Rendering</span>
+                          <span class="tag tag-default tag-outline anim-uni-in-up">Portfolio Demo</span>
                           <span class="tag tag-default tag-outline anim-uni-in-up">Web Experience</span>
                         </div>
 
                         <p class="anim-uni-in-up">
-                          Animation brings the model to life and gives the presentation a more dynamic presence. Rather than
-                          behaving like a static portfolio image, the spaceship becomes part of a living scene that feels
-                          more immersive and engaging for the viewer.
-                        </p>
-                      </div>
-
-                      <div class="mxd-pinned__text-item" role="listitem">
-                        <div class="mxd-pinned__img-mobile anim-uni-in-up">
-                          <img src="/assets/img/backgrounds/spaceship3.png" alt="Spaceship web implementation view">
-                        </div>
-
-                        <h2 class="mxd-pinned__title h2-small anim-uni-in-up">
-                          Web deployment
-                        </h2>
-
-                        <div class="mxd-pinned__tags">
-                          <span class="tag tag-default tag-outline anim-uni-in-up">Implementation</span>
-                          <span class="tag tag-default tag-outline anim-uni-in-up">Browser Rendering</span>
-                          <span class="tag tag-default tag-outline anim-uni-in-up">Interaction Setup</span>
-                          <span class="tag tag-default tag-outline anim-uni-in-up">Portfolio Demo</span>
-                        </div>
-
-                        <p class="anim-uni-in-up">
-                          This part focuses on the technical side of the project, including model preparation, browser
-                          rendering, interaction setup, and playback behavior. It presents the spaceship not only as a visual
-                          asset, but also as a complete web-based implementation inside the portfolio.
+                          This stage focuses on the technical side of the project, including rendering, camera behavior,
+                          layout integration and performance-friendly presentation directly inside the browser.
                         </p>
                       </div>
 
@@ -637,10 +662,9 @@
 
       </div>
     </div>
-    <!-- Section - Spaceship Showcase End -->
+    <!-- Section - Wavebreaker Showcase End -->
 
   </main>
-  <!-- Page Content End -->
 
   <!-- Footer Start -->
   <footer id="mxd-footer" class="mxd-footer">

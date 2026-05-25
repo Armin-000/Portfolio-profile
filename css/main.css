@@ -5171,7 +5171,6 @@ form textarea:required:valid {
   -o-object-fit: cover;
   object-fit: cover;
   -moz-border-radius: 2em;
-  border-radius: 2em;
 }
 @media only screen and (min-width: 1600px) {
   .mxd-pinned__img {
@@ -5302,7 +5301,6 @@ form textarea:required:valid {
   -o-object-fit: cover;
   object-fit: cover;
   -moz-border-radius: 2em;
-  border-radius: 2em;
 }
 @media only screen and (min-width: 768px) {
   .mxd-pinned__img-mobile {
@@ -6612,7 +6610,7 @@ html[color-scheme="dark"] .mxd-logo__image {
 
   position: absolute;
   left: 50%;
-  bottom: 70px;
+  bottom: 190px;
   transform: translateX(-50%);
 
   width: 48px;
@@ -6710,7 +6708,7 @@ html[color-scheme="dark"] .mxd-logo__image {
 
   position: absolute;
   left: 50%;
-  bottom: 70px;
+  bottom: 190px;
   transform: translateX(-50%);
 
   width: min(1120px, 96%);
@@ -7475,3 +7473,53 @@ html[color-scheme="dark"] .mxd-logo__image {
 
 }
 
+/* Tablet */
+@media (max-width: 991px){
+
+  .mxd-section-inner-headline .mw-toggle{
+    bottom:130px;
+  }
+
+  .mxd-section-inner-headline .mw-panel{
+    bottom:80px;
+    width:92%;
+    max-height:50vh;
+  }
+
+}
+
+
+/* Mobile */
+@media (max-width: 768px){
+
+  .mxd-section-inner-headline .mw-toggle{
+    bottom:95px;
+    width:44px;
+    height:44px;
+  }
+
+  .mxd-section-inner-headline .mw-panel{
+    bottom:30px;
+    width:94%;
+    padding:12px;
+    max-height:45vh;
+    border-radius:16px;
+  }
+
+}
+
+
+/* Mali mobiteli */
+@media (max-width:480px){
+
+  .mxd-section-inner-headline .mw-toggle{
+    bottom:75px;
+  }
+
+  .mxd-section-inner-headline .mw-panel{
+    bottom:15px;
+    width:95%;
+    max-height:40vh;
+  }
+
+}
