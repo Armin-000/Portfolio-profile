@@ -7523,3 +7523,159 @@ html[color-scheme="dark"] .mxd-logo__image {
   }
 
 }
+
+/* =======================
+AI TOOLS
+======================= */
+
+.ai-tools{
+    padding:120px 0;
+    overflow:hidden;
+}
+
+.ai-tools__intro{
+    text-align:center;
+    margin-bottom:60px;
+}
+
+.ai-marquee{
+
+    width:100%;
+    overflow:hidden;
+
+    mask-image:
+    linear-gradient(
+        to right,
+        transparent,
+        #000 10%,
+        #000 90%,
+        transparent
+    );
+
+    -webkit-mask-image:
+    linear-gradient(
+        to right,
+        transparent,
+        #000 10%,
+        #000 90%,
+        transparent
+    );
+}
+
+.ai-track{
+
+    display:flex;
+    width:max-content;
+
+    will-change:transform;
+
+    animation:
+    aiScroll 30s linear infinite;
+}
+
+.ai-group{
+
+    display:flex;
+    gap:24px;
+
+    flex-shrink:0;
+
+    padding-right:24px;
+}
+
+.ai-item{
+
+    width:250px;
+    height:180px;
+
+    flex:0 0 190px;
+
+    display:flex;
+    flex-direction:column;
+
+    justify-content:center;
+    align-items:center;
+
+    gap:14px;
+
+    border-radius:24px;
+
+    transition:
+    .4s ease;
+}
+
+.ai-item:hover{
+
+    transform:
+    translateY(-4px);
+}
+
+.ai-item img{
+
+    width:100px;
+    height:100px;
+
+    object-fit:contain;
+    display:block;
+
+    /* BIJELI SVG */
+
+    filter:
+    brightness(0)
+    invert(1);
+}
+
+.ai-item span{
+
+    color:#fff;
+
+    font-size: 2rem;
+    font-weight:500;
+
+    white-space:nowrap;
+}
+
+.ai-marquee:hover .ai-track{
+    animation-play-state:paused;
+}
+
+@keyframes aiScroll{
+
+    from{
+        transform:
+        translate3d(0,0,0);
+    }
+
+    to{
+        transform:
+        translate3d(-33.333%,0,0);
+    }
+
+}
+
+@media(max-width:768px){
+
+.ai-tools{
+    padding:80px 0;
+}
+
+.ai-item{
+
+    width:200px;
+    height:150px;
+
+    flex-basis:150px;
+}
+
+.ai-item img{
+
+    width:90px;
+    height:90px;
+}
+
+.ai-item span{
+
+    font-size: 1rem;
+}
+
+}
