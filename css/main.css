@@ -7799,6 +7799,20 @@ AI TOOLS
     font-weight:700;
 }
 
+/* Tablet */
+@media (max-width: 1024px){
+    .project-card__content h2{
+        max-width:500px;
+    }
+}
+
+/* Mobile */
+@media (max-width: 768px){
+    .project-card__content h2{
+        max-width:300px;
+    }
+}
+
 .project-card__tags{
     display:flex;
     flex-wrap:wrap;
